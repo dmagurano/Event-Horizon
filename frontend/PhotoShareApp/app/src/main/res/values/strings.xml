@@ -1,0 +1,20 @@
+<resources>
+    <string name="login_title">Log in to your account</string>
+    <string name="app_name">PhotoShareApp</string>
+    <string name="loginBtn_text">Log in</string>
+    <string name="logoutBtn_text">Log out</string>
+    <string name="email">E-mail</string>
+    <string name="password">Password</string>
+    <string name="signupBtn_text">Create account</string>
+
+    <string name="auth_failed">Authentication failed</string>
+    <string name="pw_check_failed">Retype your password</string>
+
+    <string name="name_title">Enter your name:</string>
+    <string name="name_text">Name</string>
+    <string name="email_title">Enter your email address:</string>
+    <string name="passwd_title">Enter password:</string>
+    <string name="passwd_retype_title">Confirm password:</string>
+    <string name="registerBtn_text">Register</string>
+
+</resources>
