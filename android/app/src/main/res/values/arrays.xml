@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="test_images">
+        <item>http://www.visitduluth.com/pics/photo-bank/Mariner-Sculpture.jpg</item>
+        <item>http://www.visitduluth.com/pics/photo-bank/Canal-Park-Architecture.jpg</item>
+        <item>http://www.visitduluth.com/pics/photo-bank/Depot.jpg</item>
+        <item>http://www.visitduluth.com/pics/photo-bank/DECC-Lift-Bridge.jpg</item>
+        <item>http://www.visitduluth.com/pics/photo-bank/Glensheen.jpg</item>
+        <item>http://www.visitduluth.com/pics/photo-bank/Enger-Tower.jpg</item>
+        <item>http://www.visitduluth.com/pics/photo-bank/DECC-Harborside-Ballroom.jpg</item>
+        <item>http://www.visitduluth.com/pics/photo-bank/Clock-Tower.jpg</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/0.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/10.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/100.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/101.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/103.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/104.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/105.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/109.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/11.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/110.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/111.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/113.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/114.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/115.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/116.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/118.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/119.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/12.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/120.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/121.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/122.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/123.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/126.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/128.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/129.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/13.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/132.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/133.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/134.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/135.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/136.png?raw=true"</item>
+        <item>"https://github.com/llSourcell/Pokemon_GAN/blob/master/data/139.png?raw=true"</item>
+        <item>"https://www.gstatic.com/webp/gallery3/1.png"</item>
+        <item>"https://www.gstatic.com/webp/gallery3/2.png"</item>
+        <item>"https://www.gstatic.com/webp/gallery3/3.png"</item>
+        <item>"https://www.gstatic.com/webp/gallery3/4.png"</item>
+        <item>"https://www.gstatic.com/webp/gallery3/5.png"</item>
+
+    </string-array>
+
+
+</resources>
