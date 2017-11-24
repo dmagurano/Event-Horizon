@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "mcc-fall-2017-g04",
+  "private_key_id": "35ff1cc15d6d207e576673c62a065e920d5f903a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCjGFBkU/DAGLSl\nOKvm37WBOYVdCeSARnNpXSkwK0c0AVSnN6iWnkU/R/duI1io9lrsmcfQ0ZZN53qA\nHu1/TLohX8ZzHHpgiMYLzw1Oplkb8iISEoZRyHlc7TJKnYbEMkHYB4lPdH3/NHtU\n9RENyYTo4HvuVhMHmqTJvprDrEaFj5zYh9XhzDuOK4nVsSr313I1G9uCnK31DNA1\neOqSExq1WIawBrR1MGo3kqKeEvBpKFRVG2NOY9Mwajmc74QCWKt2oQ+t6W6yPQLl\n1OPRvUZO21V6SRroyNfRhHogL7mSszB8WlclYCy88rkEfx7a0KQ9H7Nn5/2jazlH\nBpv4cssHAgMBAAECggEAGN76U3JhgknCMnfj7v8qZJxq8/cwO0eDDgxA3bGb2Bhj\n2mQod1+HW9ETsF3/hTScRPxmdjef3h1wlt0ghosizzgVwTQUjWgOG3rloprHd/WC\nsJLWnN4fc8ZQJwTCqmSnmdP8Ynt3Q1WzgQ8mHJ4ggIrLG1tQ55XzjzhbzX8V+gPg\nFOKh7LKgqW3nxh9b+MnAplwYhis/EYiBGmTj3pIPbhoZsj9JBSqsJ/c04mGyRi6A\nndbSMgx0t+0MDI+oodiqjURu+FB09QD3N3QxnQbT0IoB3y9WT9PT6BtPS3asWySH\nM04ZQcFP8EnzeCIm4+bG9fzX43clDH38LWxcTBzIoQKBgQDXcJ8kig58SUtYB/7q\n+mHUyhzxmxfnDd8UaxMzl2CIgj2fF+R1GU+1o3muh/69U0PZ+C99qaeNwWR6k6dB\nfiZc5hDZwvavHiqgWNJHrhkGJzGVYYW6PfD7vPLi5kpJzzoJa6uVdDW3SxewWfci\ncTkiAY2dJEN2c8zje2UwsYAw/wKBgQDBzN3PoyOB/uFKcdydiJvzLOKPea+S/IBn\nVt9HT2I9xGhRyWSB8oEGEfzbdG5ZToim7Mqy2f+r1YqJdX0zrBJuYXUAQpFGYVr5\nKI/TYsw9gdVwjlul8+UIZYiJyK1X8ixMNjOVYZcGSMV4zt0N1F1+Uc9PlWFnEtoA\ndc4mkInd+QKBgQCxN+1RS1d7GXem5HznoitTtSZ2AFR7NkfpLeNPrxgzcp9p/Wdq\ng/WzvtPbo/cCmjnYVXYLcsFntEwJIOiW0USRapc16lCt4KzD1gyz9hyTmS4KaXxt\npYJUMivCRhmZ+aMOGMm+WSfOrTDBWmAWrviGZqytNSVhjQRfpCOrGHgQ1QKBgBTS\nLs59B3aS7J9z5jDimWah3uFtQGi5Sg5QLgLaS4K5VD/dNDgl1qjRS+pD8wsTPek5\nLXnTo/1RHuYvwjjH9t73B3v0quj10rFMI0+hoLHG/ihukvgcYPHq/qVW8xCsyweR\nFy+oYXJiZRzalLNEqprErVIuiV1qkBNWlMRd6QH5AoGBAMfpdz6G18SFzx8IVk4d\nxfkyL0flQbwebUVZB0MzBCwV0e6J6uzkZrKxGP4siB8aQXez8DiXg0CI7fV7KlPe\ni2AJaIbpjDMJ8HAslNEHvk7MT3oAG5TgPDpo4+qgko+Lz0viJy5/hY0mrjYGqitz\noHBge9nmNkR6QSXlxrt2ogW0\n-----END PRIVATE KEY-----\n",
+  "client_email": "daniele@mcc-fall-2017-g04.iam.gserviceaccount.com",
+  "client_id": "110583404204510765711",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/daniele%40mcc-fall-2017-g04.iam.gserviceaccount.com"
+}

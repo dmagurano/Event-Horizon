@@ -1,0 +1,23 @@
+{
+  "name": "mcc-2017-g04",
+  "version": "0.0.1",
+  "description": "MCC Group 4 Project Fall 2017",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "stop": "pkill --signal SIGINT mcc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://version.aalto.fi/gitlab/CS-E4100/mcc-2017-g04.git"
+  },
+  "author": "Daniele Magurano",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "firebase-admin": "^5.5.1",
+    "notp": "^2.0.3"
+  }
+}
