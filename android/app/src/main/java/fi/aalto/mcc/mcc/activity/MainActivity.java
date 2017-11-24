@@ -28,8 +28,11 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +70,24 @@ public class MainActivity extends AppCompatActivity
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+
+
+                    //Get id token and send to backend via HTTPS
+                    user.getIdToken(true)
+                            .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+                                public void onComplete(@NonNull Task<GetTokenResult> task) {
+                                    if (task.isSuccessful()) {
+                                        String idToken = task.getResult().getToken();
+
+                                        Log.d(TAG, "IDtoken: " + idToken);
+
+                                        //TODO: send the token to backend via HTTPS
+
+                                    } else {
+                                        // Handle error -> task.getException();
+                                    }
+                                }
+                            });
 
                 } else {
                     // User is signed out
