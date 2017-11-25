@@ -51,8 +51,8 @@ public class GalleryActivity extends AppCompatActivity {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
 
         // XXX implementation ongoing
-        adapter.addFrag(new ByCategory(album.getGallery()), "Category");
-        adapter.addFrag(new ByAuthor(album.getGallery()), "Author");
+        adapter.addFrag(new ByCategory(album), "Category");
+        adapter.addFrag(new ByAuthor(album), "Author");
 
         viewPager.setAdapter(adapter);
 

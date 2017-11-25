@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity
         albumList = new ArrayList<>();
         adapter = new AlbumViewAdapter(this, albumList);
 
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
+               RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(3), true));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -192,6 +192,10 @@ public class MainActivity extends AppCompatActivity
         AlbumObject a = new AlbumObject("Private", false);
         for (int i = 0; i < 8; i++) {
             GalleryObject obj = new GalleryObject();
+            if(i%2 == 0) obj.setCategory("Human");
+            else obj.setCategory("Not Human");
+            obj.setAuthor("Pätkä");
+            if(i%3 == 0) obj.setAuthor("Pekka");
             obj.setSmall(samples[i]);
             obj.setLarge(samples[i]);
             a.add(obj);
@@ -201,6 +205,18 @@ public class MainActivity extends AppCompatActivity
         a = new AlbumObject("IXDA", true);
         for (int i = 8; i < 20; i++) {
             GalleryObject obj = new GalleryObject();
+            if(i == 9) obj.setCategory("Human");
+            else if(i == 10) obj.setCategory("Not human");
+            else if(i == 11) obj.setCategory("Something else");
+            else obj.setCategory("Test");
+
+
+            if(i == 9) obj.setAuthor("Matti");
+            else if(i == 10) obj.setAuthor("Teppo");
+            else if(i == 11) obj.setAuthor("Seppo");
+            else obj.setAuthor("Jaakko");
+
+
             obj.setSmall(samples[i]);
             obj.setLarge(samples[i]);
             a.add(obj);
@@ -210,6 +226,11 @@ public class MainActivity extends AppCompatActivity
         a = new AlbumObject("Wappu", true);
         for (int i = 20; i < 32; i++) {
             GalleryObject obj = new GalleryObject();
+            if(i%2 == 0) obj.setCategory("Human");
+            else obj.setCategory("Not Human");
+            obj.setAuthor("Pätkä");
+            if(i%3 == 0) obj.setAuthor("Pekka");
+
             obj.setSmall(samples[i]);
             obj.setLarge(samples[i]);
             a.add(obj);
@@ -218,6 +239,11 @@ public class MainActivity extends AppCompatActivity
         a = new AlbumObject("Miscellaneous", true);
         for (int i = 32; i < 40; i++) {
             GalleryObject obj = new GalleryObject();
+            if(i%2 == 0) obj.setCategory("Human");
+            else obj.setCategory("Not Human");
+            obj.setAuthor("Pätkä");
+            if(i%3 == 0) obj.setAuthor("Pekka");
+
             obj.setSmall(samples[i]);
             obj.setLarge(samples[i]);
             a.add(obj);

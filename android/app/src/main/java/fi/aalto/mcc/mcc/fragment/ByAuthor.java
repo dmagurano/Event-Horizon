@@ -3,6 +3,7 @@ package fi.aalto.mcc.mcc.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 
 import fi.aalto.mcc.mcc.R;
 import fi.aalto.mcc.mcc.adapter.GalleryViewAdapter;
-import fi.aalto.mcc.mcc.helper.GridSpacingItemDecoration;
+import fi.aalto.mcc.mcc.model.AlbumObject;
 import fi.aalto.mcc.mcc.model.GalleryObject;
 
 /**
@@ -25,15 +26,20 @@ import fi.aalto.mcc.mcc.model.GalleryObject;
 
 
 public class ByAuthor extends Fragment {
+    private static final int BY_AUTHOR = 0;
+    private static final int BY_CATEGORY = 1;
+
+    private static final int VIEW_HEADER = 0;
+    private static final int VIEW_NORMAL = 1;
 
     private String TAG = ByAuthor.class.getSimpleName();
-    private ArrayList<GalleryObject> listObjects;
+    private AlbumObject data;
     private GalleryViewAdapter viewAdapter;
     private RecyclerView recyclerView;
     private Context context;
 
-    public ByAuthor(ArrayList<GalleryObject> galleryObjects) {
-        this.listObjects = galleryObjects;
+    public ByAuthor(AlbumObject obj) {
+        this.data = obj;
     }
 
     @Override
@@ -51,10 +57,20 @@ public class ByAuthor extends Fragment {
 
         recyclerView = (RecyclerView) _view.findViewById(R.id.my_recycler_view);
 
-        viewAdapter = new GalleryViewAdapter(getActivity().getApplicationContext(), listObjects);
+        viewAdapter = new GalleryViewAdapter(getActivity().getApplicationContext(), data, BY_AUTHOR);
 
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 3);
+        GridLayoutManager mLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 3);
+        mLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+
+                if ( data.getFlatViewType(position,BY_AUTHOR) == VIEW_HEADER) return 3;
+                else return 1;
+
+            }
+        });
         recyclerView.setLayoutManager(mLayoutManager);
+
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(viewAdapter);
 
@@ -63,15 +79,17 @@ public class ByAuthor extends Fragment {
                 .getApplicationContext(), recyclerView, new GalleryViewAdapter.ClickListener() {
             @Override
             public void onClick(View view, int position) {
+
+                // XXX adjust position
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("images", listObjects);
+                bundle.putSerializable("images", data.getGallery());
                 bundle.putInt("position", position);
 
 
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 GalleryObjectDetails newFragment = GalleryObjectDetails.newInstance();
                 newFragment.setArguments(bundle);
-                newFragment.show(ft, "slideshow");
+                newFragment.show(ft, "details");
             }
 
             @Override

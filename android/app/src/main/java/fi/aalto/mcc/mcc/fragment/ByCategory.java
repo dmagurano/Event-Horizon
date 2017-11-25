@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import fi.aalto.mcc.mcc.R;
 import fi.aalto.mcc.mcc.adapter.GalleryViewAdapter;
+import fi.aalto.mcc.mcc.model.AlbumObject;
 import fi.aalto.mcc.mcc.model.GalleryObject;
 
 /**
@@ -26,15 +27,21 @@ import fi.aalto.mcc.mcc.model.GalleryObject;
 
 public class ByCategory extends Fragment {
 
+    private static final int BY_AUTHOR = 0;
+    private static final int BY_CATEGORY = 1;
+
+    private static final int VIEW_HEADER = 0;
+    private static final int VIEW_NORMAL = 1;
+
     private String TAG = ByCategory.class.getSimpleName();
-    private ArrayList<GalleryObject> listObjects;
+    private AlbumObject data;
     private GalleryViewAdapter viewAdapter;
     private RecyclerView recyclerView;
     private Context context;
 
-    public ByCategory(ArrayList<GalleryObject> galleryObjects)
+    public ByCategory(AlbumObject obj)
     {
-        this.listObjects = galleryObjects;
+        this.data = obj;
     }
 
 
@@ -46,16 +53,25 @@ public class ByCategory extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View _view = inflater.inflate(R.layout.by_category, container, false);
 
         recyclerView = (RecyclerView) _view.findViewById(R.id.my_recycler_view);
 
-        viewAdapter = new GalleryViewAdapter(getActivity().getApplicationContext(), listObjects);
+        viewAdapter = new GalleryViewAdapter(getActivity().getApplicationContext(), data, BY_CATEGORY);
 
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 3);
+        GridLayoutManager mLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 3);
+
+        mLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+
+                if ( data.getFlatViewType(position,BY_CATEGORY) == VIEW_HEADER) return 3;
+                return 1;
+            }
+        });
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(viewAdapter);
@@ -65,15 +81,16 @@ public class ByCategory extends Fragment {
                                                 .getApplicationContext(), recyclerView, new GalleryViewAdapter.ClickListener() {
             @Override
             public void onClick(View view, int position) {
+                //XXX adjust position
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("images", listObjects);
+                bundle.putSerializable("images", data.getGallery());
                 bundle.putInt("position", position);
 
 
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 GalleryObjectDetails newFragment = GalleryObjectDetails.newInstance();
                 newFragment.setArguments(bundle);
-                newFragment.show(ft, "slideshow");
+                newFragment.show(ft, "details");
             }
 
             @Override
