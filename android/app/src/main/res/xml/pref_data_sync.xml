@@ -1,0 +1,22 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="2"
+        android:entries="@array/pref_sync_quality_lan_titles"
+        android:entryValues="@array/pref_sync_quality_lan_values"
+        android:key="sync_quality_lan"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_sync_quality_lan" />
+
+    <ListPreference
+        android:defaultValue="1"
+        android:entries="@array/pref_sync_quality_wan_titles"
+        android:entryValues="@array/pref_sync_quality_wan_values"
+        android:key="sync_quality_wan"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_sync_quality_wan" />
+
+
+</PreferenceScreen>

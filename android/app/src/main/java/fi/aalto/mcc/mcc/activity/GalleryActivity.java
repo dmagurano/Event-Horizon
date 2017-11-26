@@ -31,7 +31,6 @@ import fi.aalto.mcc.mcc.model.GalleryObject;
 public class GalleryActivity extends AppCompatActivity {
 
     private static final String TAG = GalleryActivity.class.getSimpleName();
-    //private ArrayList<GalleryObject> listObjects;
     private AlbumObject album;
 
     @Override
@@ -39,7 +38,6 @@ public class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
 
-        //listObjects = (ArrayList<GalleryObject>)getIntent().getSerializableExtra("album");
         album = (AlbumObject) getIntent().getSerializableExtra("album");
 
         final Toolbar toolbar = (Toolbar) findViewById(R.id.gallery_tab_toolbar);
@@ -48,11 +46,10 @@ public class GalleryActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         final ViewPager viewPager = (ViewPager) findViewById(R.id.gallery_tab_viewpager);
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        TabPagerAdapter adapter = new TabPagerAdapter(getSupportFragmentManager());
 
-        // XXX implementation ongoing
-        adapter.addFrag(new ByCategory(album), "Category");
-        adapter.addFrag(new ByAuthor(album), "Author");
+        adapter.add(new ByCategory(album), "Category");
+        adapter.add(new ByAuthor(album), "Author");
 
         viewPager.setAdapter(adapter);
 
@@ -95,32 +92,32 @@ public class GalleryActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private static class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
+    private static class TabPagerAdapter extends FragmentPagerAdapter {
+        private final ArrayList<Fragment> fragmentList = new ArrayList<>();
+        private final ArrayList<String> fragmentTitleList = new ArrayList<>();
 
-        public ViewPagerAdapter(FragmentManager manager) {
+        public TabPagerAdapter(FragmentManager manager) {
             super(manager);
         }
 
         @Override
         public Fragment getItem(int position) {
-            return mFragmentList.get(position);
+            return fragmentList.get(position);
         }
 
         @Override
         public int getCount() {
-            return mFragmentList.size();
+            return fragmentList.size();
         }
 
-        public void addFrag(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
+        public void add(Fragment fragment, String title) {
+            fragmentList.add(fragment);
+            fragmentTitleList.add(title);
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
+            return fragmentTitleList.get(position);
         }
     }
 

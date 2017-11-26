@@ -96,8 +96,6 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
     @Override
     public void onBindViewHolder(CustomViewHolder holder, int position)
     {
-        //if ( adapterType == 1 ) return;
-
         ArrayList<GalleryObject> array = data.flatten(adapterType);
 
         if ( array.get(position).getType() == VIEW_HEADER )

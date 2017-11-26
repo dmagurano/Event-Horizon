@@ -145,7 +145,6 @@ public class MainActivity extends AppCompatActivity
         }));
 
 
-        prepareAlbums();
 
         try {
             Glide.with(this).load(R.drawable.backdrop).into((ImageView) findViewById(R.id.backdrop));
@@ -171,6 +170,8 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // XXX to be removed (SM)
+        makeDummyAlbums();
     }
 
     /**
@@ -208,79 +209,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
-
-    private void prepareAlbums() {
-
-        String [] samples = getResources().getStringArray(R.array.test_images);;
-
-        AlbumObject a = new AlbumObject("Private", false);
-        for (int i = 0; i < 8; i++) {
-            GalleryObject obj = new GalleryObject();
-            if(i%2 == 0) obj.setCategory("Human");
-            else obj.setCategory("Not Human");
-            obj.setAuthor("Pätkä");
-            if(i%3 == 0) obj.setAuthor("Pekka");
-            obj.setSmall(samples[i]);
-            obj.setLarge(samples[i]);
-            a.add(obj);
-        }
-        albumList.add(a);
-
-        a = new AlbumObject("IXDA", true);
-        for (int i = 8; i < 20; i++) {
-            GalleryObject obj = new GalleryObject();
-            if(i == 9) obj.setCategory("Human");
-            else if(i == 10) obj.setCategory("Not human");
-            else if(i == 11) obj.setCategory("Something else");
-            else obj.setCategory("Test");
-
-
-            if(i == 9) obj.setAuthor("Matti");
-            else if(i == 10) obj.setAuthor("Teppo");
-            else if(i == 11) obj.setAuthor("Seppo");
-            else obj.setAuthor("Jaakko");
-
-
-            obj.setSmall(samples[i]);
-            obj.setLarge(samples[i]);
-            a.add(obj);
-        }
-        albumList.add(a);
-
-        a = new AlbumObject("Wappu", true);
-        for (int i = 20; i < 32; i++) {
-            GalleryObject obj = new GalleryObject();
-            if(i%2 == 0) obj.setCategory("Human");
-            else obj.setCategory("Not Human");
-            obj.setAuthor("Pätkä");
-            if(i%3 == 0) obj.setAuthor("Pekka");
-
-            obj.setSmall(samples[i]);
-            obj.setLarge(samples[i]);
-            a.add(obj);
-        }
-        albumList.add(a);
-        a = new AlbumObject("Miscellaneous", true);
-        for (int i = 32; i < 40; i++) {
-            GalleryObject obj = new GalleryObject();
-            if(i%2 == 0) obj.setCategory("Human");
-            else obj.setCategory("Not Human");
-            obj.setAuthor("Pätkä");
-            if(i%3 == 0) obj.setAuthor("Pekka");
-
-            obj.setSmall(samples[i]);
-            obj.setLarge(samples[i]);
-            a.add(obj);
-        }
-        albumList.add(a);
-
-
-        a = new AlbumObject("Tyhjä", true);
-        albumList.add(a);
-
-        adapter.notifyDataSetChanged();
-    }
-
 
 
     // Adapter for the viewpager using FragmentPagerAdapter
@@ -372,6 +300,12 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_settings) {
 
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            if (intent != null)
+            {
+                startActivity(intent);
+            }
+
         } else if (id == R.id.nav_logout) {
             mAuth.signOut();
         }
@@ -394,4 +328,84 @@ public class MainActivity extends AppCompatActivity
             mAuth.removeAuthStateListener(mAuthListener);
         }
     }
+
+
+
+
+
+
+
+    //  a garbage generator for testing purposes
+    private void makeDummyAlbums() {
+
+        String [] samples = getResources().getStringArray(R.array.test_images);;
+
+        AlbumObject a = new AlbumObject("Private", false);
+        for (int i = 0; i < 8; i++) {
+            GalleryObject obj = new GalleryObject();
+            if(i%2 == 0) obj.setCategory("Human");
+            else obj.setCategory("Not Human");
+            obj.setAuthor("Pätkä");
+            if(i%3 == 0) obj.setAuthor("Pekka");
+            obj.setSmall(samples[i]);
+            obj.setLarge(samples[i]);
+            a.add(obj);
+        }
+        albumList.add(a);
+
+        a = new AlbumObject("IXDA", true);
+        for (int i = 8; i < 20; i++) {
+            GalleryObject obj = new GalleryObject();
+            if(i == 9) obj.setCategory("Human");
+            else if(i == 10) obj.setCategory("Not human");
+            else if(i == 11) obj.setCategory("Something else");
+            else obj.setCategory("Test");
+
+
+            if(i == 9) obj.setAuthor("Matti");
+            else if(i == 10) obj.setAuthor("Teppo");
+            else if(i == 11) obj.setAuthor("Seppo");
+            else obj.setAuthor("Jaakko");
+
+
+            obj.setSmall(samples[i]);
+            obj.setLarge(samples[i]);
+            a.add(obj);
+        }
+        albumList.add(a);
+
+        a = new AlbumObject("Wappu", true);
+        for (int i = 20; i < 32; i++) {
+            GalleryObject obj = new GalleryObject();
+            if(i%2 == 0) obj.setCategory("Human");
+            else obj.setCategory("Not Human");
+            obj.setAuthor("Pätkä");
+            if(i%3 == 0) obj.setAuthor("Pekka");
+
+            obj.setSmall(samples[i]);
+            obj.setLarge(samples[i]);
+            a.add(obj);
+        }
+        albumList.add(a);
+        a = new AlbumObject("Miscellaneous", true);
+        for (int i = 32; i < 40; i++) {
+            GalleryObject obj = new GalleryObject();
+            if(i%2 == 0) obj.setCategory("Human");
+            else obj.setCategory("Not Human");
+            obj.setAuthor("Pätkä");
+            if(i%3 == 0) obj.setAuthor("Pekka");
+
+            obj.setSmall(samples[i]);
+            obj.setLarge(samples[i]);
+            a.add(obj);
+        }
+        albumList.add(a);
+
+
+        a = new AlbumObject("Tyhjä", true);
+        albumList.add(a);
+
+        adapter.notifyDataSetChanged();
+    }
+
 }

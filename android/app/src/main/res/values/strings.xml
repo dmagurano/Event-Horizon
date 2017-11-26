@@ -47,4 +47,35 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_settings">Settings</string>
+
+
+    <!-- Settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data Syncronization Quality </string>
+
+    <string name="pref_title_sync_quality_lan">Image Quality over WiFi-network</string>
+    <string-array name="pref_sync_quality_lan_titles">
+        <item>Low (640x480)</item>
+        <item>High(1280x960)</item>
+        <item>Max (original size)</item>
+    </string-array>
+    <string-array name="pref_sync_quality_lan_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string name="pref_title_sync_quality_wan">Image Quality over Mobile-network</string>
+    <string-array name="pref_sync_quality_wan_titles">
+        <item>Low (640x480)</item>
+        <item>High(1280x960)</item>
+        <item>Max (original size)</item>
+    </string-array>
+    <string-array name="pref_sync_quality_wan_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+
 </resources>
