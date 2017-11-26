@@ -13,58 +13,105 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import fi.aalto.mcc.mcc.model.AlbumObject;
 import fi.aalto.mcc.mcc.model.GalleryObject;
 import fi.aalto.mcc.mcc.R;
 
 
-public class GalleryViewAdapter extends RecyclerView.Adapter<GalleryViewAdapter.CustomViewHolder> {
+public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter.CustomViewHolder> {
+
+    private static final int VIEW_HEADER = 0;
+    private static final int VIEW_NORMAL = 1;
 
     private String TAG = GalleryViewAdapter.class.getSimpleName();
-    private List<GalleryObject> objectList;
+    private AlbumObject data;
     private Context c;
+    private View headerView;
+    private int adapterType;
+
 
 
     public class CustomViewHolder extends RecyclerView.ViewHolder {
         public ImageView thumbnail;
+        public TextView header;
 
         public CustomViewHolder(View view) {
             super(view);
             thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+            header = (TextView) view.findViewById(R.id.headertext);
         }
     }
 
-
-    public GalleryViewAdapter(Context context, List<GalleryObject> obj) {
+    public GalleryViewAdapter(Context context, AlbumObject obj, int type) {
         this.c = context;
-        this.objectList = obj;
+        this.data = obj;
+        this.adapterType = type;
     }
+
+    public void setHeader(View v) {
+        this.headerView = v;
+    }
+
 
     @Override
-    public CustomViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.image_thumbnail, parent, false);
-
-        return new CustomViewHolder(itemView);
+    public int getItemViewType(int position)
+    {
+        return data.getFlatViewType(position, adapterType);
     }
 
-    @Override
-    public void onBindViewHolder(CustomViewHolder holder, int position) {
-        Glide.with(c).load(objectList.get(position).getSmall())
-                .thumbnail(0.5f)
-                .crossFade()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(holder.thumbnail);
-    }
 
     @Override
     public int getItemCount() {
-        return objectList.size();
+        return data.getGallery().size() + data.enumCategories().size();
+    }
+
+
+    @Override
+    public CustomViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+        if (viewType == VIEW_HEADER) {
+            View itemView = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.list_header, parent, false);
+
+            return new CustomViewHolder(itemView);
+
+        } else {
+            View itemView = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.image_thumbnail, parent, false);
+
+            return new CustomViewHolder(itemView);
+
+        }
+
+    }
+
+    @Override
+    public void onBindViewHolder(CustomViewHolder holder, int position)
+    {
+        //if ( adapterType == 1 ) return;
+
+        ArrayList<GalleryObject> array = data.flatten(adapterType);
+
+        if ( array.get(position).getType() == VIEW_HEADER )
+        {
+            holder.header.setText(array.get(position).getHeader());
+            return;
+
+        }
+        else Glide.with(c).load(array.get(position).getSmall())
+                    .thumbnail(0.5f)
+                    .crossFade()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(holder.thumbnail);
+
     }
 
     public interface ClickListener {

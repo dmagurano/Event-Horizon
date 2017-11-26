@@ -6,7 +6,11 @@ import java.io.Serializable;
  * Created by user on 14/11/2017.
  */
 
-public class GalleryObject implements Serializable {
+public class GalleryObject implements Serializable
+{
+
+    private static final int VIEW_HEADER = 0;
+    private static final int VIEW_NORMAL = 1;
 
     // image location as filepath or URL
     private String pathThumbnail, pathImage;
@@ -20,10 +24,18 @@ public class GalleryObject implements Serializable {
 
     // object classification data
     private boolean isPublic;
+    private int type;
+    private String header;
+
     private String category;
 
     public GalleryObject() {
+        type = VIEW_NORMAL;
+    }
 
+    public GalleryObject(int type, String header) {
+        this.type = type;
+        this.header = header;
     }
 
     public GalleryObject( String small, String large, String timestamp, boolean ispublic, String category, String author) {
@@ -67,6 +79,15 @@ public class GalleryObject implements Serializable {
         this.imageTimestamp = timestamp;
     }
 
+    public String getHeader() {
+        return header;
+    }
+
+    public void setHeader(String header) {
+        this.header = header;
+        type = VIEW_HEADER;
+    }
+
     public String getDescription() {
         return imageDescription;
     }
@@ -80,6 +101,12 @@ public class GalleryObject implements Serializable {
     }
 
     public void setPublic(Boolean value)   {  this.isPublic = value; }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type)   {  this.type = type; }
 
     public String getCategory() {
         return category;
