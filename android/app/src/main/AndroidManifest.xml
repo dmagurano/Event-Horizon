@@ -26,7 +26,9 @@
             android:label="@string/title_activity_gallery"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.LoginActivity" />
-        <activity android:name=".activity.RegisterActivity"></activity>
+        <activity android:name=".activity.RegisterActivity" />
+        <activity android:name=".activity.GroupManagementActivity" />
+        <activity android:name=".activity.CreateGroupActivity"></activity>
     </application>
 
 </manifest>

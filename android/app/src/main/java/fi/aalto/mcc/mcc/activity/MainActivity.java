@@ -33,6 +33,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,11 +52,11 @@ public class MainActivity extends AppCompatActivity
     private String TAG = "Main";
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     private RecyclerView recyclerView;
     private AlbumViewAdapter adapter;
     private ArrayList<AlbumObject> albumList;
-    Intent  intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -125,7 +128,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view, int position) {
                 AlbumObject obj = albumList.get(position);
 
-                intent = new Intent(MainActivity.this, GalleryActivity.class);
+                Intent intent = new Intent(MainActivity.this, GalleryActivity.class);
 
                 if (intent != null && obj != null )
                 {
@@ -329,7 +332,16 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_group) {
+            Intent i = new Intent(MainActivity.this, GroupManagementActivity.class);
+            FirebaseUser user = mAuth.getCurrentUser();
+            if(user != null){
+                String uid = mAuth.getCurrentUser().getUid();
+                String group_id = mDatabase.child("Users").child(uid).child("group").toString();
 
+                i.putExtra("USER_IN_GROUP", group_id != null);
+
+                startActivity(i);
+            }
         } else if (id == R.id.nav_account) {
 
         } else if (id == R.id.nav_settings) {
