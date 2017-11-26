@@ -1,18 +1,15 @@
 package fi.aalto.mcc.mcc.helper;
 
 /**
- * Created by user on 18/11/2017.
- */
-
-import android.graphics.Rect;
-import android.support.v7.widget.RecyclerView;
-import android.view.View;
-
-/**
  * Created by 李涛 on 16/4/22.
  *
  * http://stackoverflow.com/questions/28531996/android-recyclerview-gridlayoutmanager-column-spacing/30701422#30701422
  */
+import android.graphics.Rect;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
+
+
 public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
 
     private int spanCount;

@@ -32,11 +32,9 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
     private static final int VIEW_NORMAL = 1;
 
     private String TAG = GalleryViewAdapter.class.getSimpleName();
-    private AlbumObject data;
     private Context c;
     private View headerView;
-    private int adapterType;
-
+    ArrayList<GalleryObject> gridArray;
 
 
     public class CustomViewHolder extends RecyclerView.ViewHolder {
@@ -50,10 +48,10 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
         }
     }
 
-    public GalleryViewAdapter(Context context, AlbumObject obj, int type) {
+
+    public GalleryViewAdapter(Context context, ArrayList<GalleryObject> gridArray) {
         this.c = context;
-        this.data = obj;
-        this.adapterType = type;
+        this.gridArray = gridArray;
     }
 
     public void setHeader(View v) {
@@ -64,13 +62,15 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
     @Override
     public int getItemViewType(int position)
     {
-        return data.getFlatViewType(position, adapterType);
+        return gridArray.get(position).getType();
+
     }
 
 
     @Override
     public int getItemCount() {
-        return data.getGallery().size() + data.enumCategories().size();
+
+        return gridArray.size();
     }
 
 
@@ -96,15 +96,14 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
     @Override
     public void onBindViewHolder(CustomViewHolder holder, int position)
     {
-        ArrayList<GalleryObject> array = data.flatten(adapterType);
 
-        if ( array.get(position).getType() == VIEW_HEADER )
+        if ( gridArray.get(position).getType() == VIEW_HEADER )
         {
-            holder.header.setText(array.get(position).getHeader());
+            holder.header.setText(gridArray.get(position).getHeader());
             return;
 
         }
-        else Glide.with(c).load(array.get(position).getSmall())
+        else Glide.with(c).load(gridArray.get(position).getSmall())
                     .thumbnail(0.5f)
                     .crossFade()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)

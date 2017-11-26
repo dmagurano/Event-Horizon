@@ -364,7 +364,11 @@ public class MainActivity extends AppCompatActivity
 
             if(i == 9) obj.setAuthor("Matti");
             else if(i == 10) obj.setAuthor("Teppo");
-            else if(i == 11) obj.setAuthor("Seppo");
+            else if(i == 11) obj.setAuthor("Teppo");
+            else if(i == 12) obj.setAuthor("Seppo");
+            else if(i == 13) obj.setAuthor("Seppo");
+            else if(i == 14) obj.setAuthor("Seppo");
+            else if(i == 15) obj.setAuthor("Seppo");
             else obj.setAuthor("Jaakko");
 
 

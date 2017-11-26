@@ -34,8 +34,8 @@ public class GalleryObjectDetails extends DialogFragment {
     private int selectedPosition = 0;
 
     public static GalleryObjectDetails newInstance() {
-        GalleryObjectDetails f = new GalleryObjectDetails();
-        return f;
+        GalleryObjectDetails instance = new GalleryObjectDetails();
+        return instance;
     }
 
     @Override
@@ -58,6 +58,7 @@ public class GalleryObjectDetails extends DialogFragment {
     }
 
     private void setCurrentItem(int position) {
+
         viewPager.setCurrentItem(position, false);
         displayMetaInfo(selectedPosition);
     }
@@ -71,7 +72,8 @@ public class GalleryObjectDetails extends DialogFragment {
         }
 
         @Override
-        public void onPageScrolled(int arg0, float arg1, int arg2) {
+        public void onPageScrolled(int position, float positionOffset, int arg2)
+        {
 
         }
 
@@ -104,7 +106,6 @@ public class GalleryObjectDetails extends DialogFragment {
         public Object instantiateItem(ViewGroup container, int position) {
 
             layoutInflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            //View _view = layoutInflater.inflate(R.layout.image_fullscreen, container, true); XXX (SM)
             View _view = layoutInflater.inflate(R.layout.image_fullscreen, null);
 
 
@@ -114,8 +115,7 @@ public class GalleryObjectDetails extends DialogFragment {
             Glide.with(getActivity()).load(listObjects.get(position).getLarge())
                     .thumbnail(0.5f)
                     .placeholder(R.drawable.ic_menu_gallery)
-                    .crossFade() //XXX some known issues with Glide animations and TouchImageView (SM)
-                    //.dontAnimate()
+                    .crossFade()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imageViewPreview );
 

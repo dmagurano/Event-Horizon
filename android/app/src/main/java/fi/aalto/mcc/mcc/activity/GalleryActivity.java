@@ -19,16 +19,16 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import fi.aalto.mcc.mcc.R;
-import fi.aalto.mcc.mcc.fragment.ByAuthor;
 import fi.aalto.mcc.mcc.fragment.ByCategory;
 import fi.aalto.mcc.mcc.model.AlbumObject;
-import fi.aalto.mcc.mcc.model.GalleryObject;
 
 
 public class GalleryActivity extends AppCompatActivity {
+
+    private static final int BY_AUTHOR = 0;
+    private static final int BY_CATEGORY = 1;
 
     private static final String TAG = GalleryActivity.class.getSimpleName();
     private AlbumObject album;
@@ -48,8 +48,8 @@ public class GalleryActivity extends AppCompatActivity {
         final ViewPager viewPager = (ViewPager) findViewById(R.id.gallery_tab_viewpager);
         TabPagerAdapter adapter = new TabPagerAdapter(getSupportFragmentManager());
 
-        adapter.add(new ByCategory(album), "Category");
-        adapter.add(new ByAuthor(album), "Author");
+        adapter.add(new ByCategory(album,BY_CATEGORY), "Category");
+        adapter.add(new ByCategory(album,BY_AUTHOR), "Author");
 
         viewPager.setAdapter(adapter);
 

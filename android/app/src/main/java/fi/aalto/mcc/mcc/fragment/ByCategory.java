@@ -27,21 +27,19 @@ import fi.aalto.mcc.mcc.model.GalleryObject;
 
 public class ByCategory extends Fragment {
 
-    private static final int BY_AUTHOR = 0;
-    private static final int BY_CATEGORY = 1;
-
     private static final int VIEW_HEADER = 0;
     private static final int VIEW_NORMAL = 1;
 
     private String TAG = ByCategory.class.getSimpleName();
-    private AlbumObject data;
+    ArrayList<GalleryObject> gridArray;
+
     private GalleryViewAdapter viewAdapter;
     private RecyclerView recyclerView;
     private Context context;
 
-    public ByCategory(AlbumObject obj)
+    public ByCategory(AlbumObject obj, int type)
     {
-        this.data = obj;
+        this.gridArray = obj.flatten(type);
     }
 
 
@@ -60,7 +58,7 @@ public class ByCategory extends Fragment {
 
         recyclerView = (RecyclerView) _view.findViewById(R.id.my_recycler_view);
 
-        viewAdapter = new GalleryViewAdapter(getActivity().getApplicationContext(), data, BY_CATEGORY);
+        viewAdapter = new GalleryViewAdapter(getActivity().getApplicationContext(), gridArray);
 
         GridLayoutManager mLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 3);
 
@@ -68,8 +66,8 @@ public class ByCategory extends Fragment {
             @Override
             public int getSpanSize(int position) {
 
-                if ( data.getFlatViewType(position,BY_CATEGORY) == VIEW_HEADER) return 3;
-                return 1;
+                if ( gridArray.get(position).getType() == VIEW_HEADER) return 3; // header takes 3 spans
+                return 1;// image takes 1 span
             }
         });
         recyclerView.setLayoutManager(mLayoutManager);
@@ -81,10 +79,23 @@ public class ByCategory extends Fragment {
                                                 .getApplicationContext(), recyclerView, new GalleryViewAdapter.ClickListener() {
             @Override
             public void onClick(View view, int position) {
-                //XXX adjust position
+
+                if ( gridArray.get(position).getType() == VIEW_HEADER) return;
+
+                //remove grid headers before passing array to details view
+                ArrayList<GalleryObject> array = new ArrayList<GalleryObject>();
+                for (GalleryObject obj : gridArray) {
+                    if (obj.getType() == VIEW_NORMAL) array.add(obj);
+                }
+                // recalculate relative position in new array
+                int offset = 0;
+                for (int i = 0; i <= position; i++) {
+                    if (gridArray.get(i).getType() == VIEW_HEADER) offset++;
+                }
+
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("images", data.getGallery());
-                bundle.putInt("position", position);
+                bundle.putSerializable("images", array);
+                bundle.putInt("position", (position-offset));
 
 
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
