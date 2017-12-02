@@ -32,6 +32,8 @@ public class ByCategory extends Fragment {
 
     private String TAG = ByCategory.class.getSimpleName();
     ArrayList<GalleryObject> gridArray;
+    AlbumObject album;
+    int type;
 
     private GalleryViewAdapter viewAdapter;
     private RecyclerView recyclerView;
@@ -39,6 +41,8 @@ public class ByCategory extends Fragment {
 
     public ByCategory(AlbumObject obj, int type)
     {
+        this.album = obj;
+        this.type = type;
         this.gridArray = obj.flatten(type);
     }
 
@@ -50,6 +54,16 @@ public class ByCategory extends Fragment {
 
     }
 
+    public void updateData(AlbumObject obj, int type)
+    {
+        this.album = obj;
+        this.type = type;
+        this.gridArray = obj.flatten(type);
+
+        viewAdapter.updateData(album, type);
+    }
+
+
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -58,7 +72,7 @@ public class ByCategory extends Fragment {
 
         recyclerView = (RecyclerView) _view.findViewById(R.id.my_recycler_view);
 
-        viewAdapter = new GalleryViewAdapter(getActivity().getApplicationContext(), gridArray);
+        viewAdapter = new GalleryViewAdapter(getActivity().getApplicationContext(), album, type);
 
         GridLayoutManager mLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(), 3);
 
@@ -110,8 +124,6 @@ public class ByCategory extends Fragment {
             }
         }));
 
-
-        viewAdapter.notifyDataSetChanged();
 
         return _view;
     }

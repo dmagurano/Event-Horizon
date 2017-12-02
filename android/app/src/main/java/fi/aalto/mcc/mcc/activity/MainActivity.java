@@ -1,17 +1,30 @@
 package fi.aalto.mcc.mcc.activity;
 
+import android.Manifest;
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -36,23 +49,45 @@ import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import android.net.Uri;
+import android.widget.Toast;
+
+import com.google.android.gms.vision.Frame;
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import fi.aalto.mcc.mcc.R;
 import fi.aalto.mcc.mcc.adapter.AlbumViewAdapter;
 import fi.aalto.mcc.mcc.model.AlbumObject;
 import fi.aalto.mcc.mcc.helper.GridSpacingItemDecoration;
 import fi.aalto.mcc.mcc.model.GalleryObject;
+import fi.aalto.mcc.mcc.model.UserObject;
 
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    public static final int CAMERA_REQUEST_CODE = 1;
+    public static final int RECORD_REQUEST_CODE = 3;
     private String TAG = "Main";
+
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
+
+    BarcodeDetector barcodeDetector;
+
+    Uri fileUri;
+    String mCurrentPhotoPath;
+    UserObject userContext;
 
     private RecyclerView recyclerView;
     private AlbumViewAdapter adapter;
@@ -114,11 +149,16 @@ public class MainActivity extends AppCompatActivity
         albumList = new ArrayList<>();
         adapter = new AlbumViewAdapter(this, albumList);
 
-               RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(3), true));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
+
+        barcodeDetector =
+                new BarcodeDetector.Builder(getApplicationContext())
+                        .setBarcodeFormats(Barcode.ALL_FORMATS)
+                        .build();
 
         recyclerView.addOnItemTouchListener(new AlbumViewAdapter
                 .AlbumTouchListener(this
@@ -156,8 +196,7 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Add camera functionality here", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Snap(view);
             }
         });
 
@@ -173,6 +212,154 @@ public class MainActivity extends AppCompatActivity
         // XXX to be removed (SM)
         makeDummyAlbums();
     }
+
+
+    public void Snap(View v)
+    {
+        if(checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+        {
+            makeRequest(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
+
+        if(checkPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+        {
+            final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            File xfile = getOutputMediaFile();
+            fileUri = Uri.fromFile(xfile);
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, xfile);
+
+            startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
+
+            } else {
+                makeRequest(Manifest.permission.CAMERA);
+        }
+    }
+
+
+    private int checkPermission(String permission) {
+        return ContextCompat.checkSelfPermission(this, permission);
+    }
+
+    private void makeRequest(String permission) {
+        ActivityCompat.requestPermissions(this, new String[]{permission}, RECORD_REQUEST_CODE);
+    }
+
+
+    public Uri getImageUri(Context inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        return Uri.parse(path);
+    }
+
+    public String getRealPathFromURI(Uri uri) {
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+        return cursor.getString(idx);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        Bitmap originalBitmap = null;
+        Uri uri = null;
+
+        if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
+
+            Log.i(TAG, "A photograph was selected");
+
+            uri = data.getData();
+            try {
+                if (uri != null) originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                else originalBitmap = (Bitmap) data.getExtras().get("data");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (originalBitmap != null) {
+
+            /*
+            // resize
+            float aspectRatio = originalBitmap.getWidth() / (float) originalBitmap.getHeight();
+            int width = 960;
+            int height = Math.round(width / aspectRatio);
+            originalBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
+            */
+
+
+            int value = doBarcodeClasssification(originalBitmap);
+            if (value < 0) {
+                return;
+            } else{
+
+                AlbumObject ao;
+
+                // XXX need to build album selector based on group later
+                if( value > 0 ) ao = albumList.get(0);
+                else ao = albumList.get(1);
+
+
+                GalleryObject obj = new GalleryObject();
+                obj.setCategory("Not human");
+                obj.setAuthor("Teppo");
+                obj.setSmall(fileUri.toString());
+                obj.setLarge(fileUri.toString());
+                ao.add(obj);
+                adapter.notifyDataSetChanged();
+
+            }
+
+        }
+
+
+
+
+    }
+
+
+    private static File getOutputMediaFile(){
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "CameraDemo");
+
+        if (!mediaStorageDir.exists()){
+            if (!mediaStorageDir.mkdirs()){
+                Log.d("CameraDemo", "failed to create directory");
+                return null;
+            }
+        }
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        return new File(mediaStorageDir.getPath() + File.separator +
+                "IMG_"+ timeStamp + ".jpg");
+    }
+
+
+    public int doBarcodeClasssification(Bitmap bitmap )
+    {
+        if (!barcodeDetector.isOperational() ) {
+            /*
+            new android.os.Handler().postDelayed(
+                    new Runnable() {
+                        public void run() {
+                            doBarcodeClasssification(bitmap);
+                            Log.e(TAG, "Barcode detector is not yet operational. Retrying after 10 seconds");
+                        }
+                    }, 10000);
+                    */
+            return -1;
+        }
+
+        Frame frame = new Frame.Builder().setBitmap(bitmap).build();
+        // detecting barcodes
+        SparseArray<Barcode> barcodes = barcodeDetector.detect(frame);
+        return barcodes.size();
+    }
+
+
 
     /**
      * Converting dp to pixel
@@ -280,9 +467,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            Snackbar.make(findViewById(android.R.id.content), "Add camera functionality here", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
-
+            Snap(this.getCurrentFocus());
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_group) {
@@ -329,6 +514,23 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    // copied from the android development pages; just added a Toast to show the storage location
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        Toast.makeText(this, mCurrentPhotoPath, Toast.LENGTH_LONG).show();
+        return image;
+    }
 
 
 
@@ -411,5 +613,6 @@ public class MainActivity extends AppCompatActivity
 
         adapter.notifyDataSetChanged();
     }
+
 
 }

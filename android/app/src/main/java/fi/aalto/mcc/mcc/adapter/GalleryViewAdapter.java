@@ -35,6 +35,8 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
     private Context c;
     private View headerView;
     ArrayList<GalleryObject> gridArray;
+    AlbumObject album;
+    int type;
 
 
     public class CustomViewHolder extends RecyclerView.ViewHolder {
@@ -49,9 +51,12 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
     }
 
 
-    public GalleryViewAdapter(Context context, ArrayList<GalleryObject> gridArray) {
+    public GalleryViewAdapter(Context context, AlbumObject albumObject, int type) {
         this.c = context;
-        this.gridArray = gridArray;
+        this.album = albumObject;
+        this.type = type;
+
+        this.gridArray = albumObject.flatten( type );
     }
 
     public void setHeader(View v) {
@@ -73,6 +78,15 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
         return gridArray.size();
     }
 
+
+    public void updateData(AlbumObject albumObject, int type)
+    {
+        this.album = albumObject;
+        this.type = type;
+        this.gridArray = album.flatten( type );
+
+        notifyDataSetChanged();
+    }
 
     @Override
     public CustomViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
