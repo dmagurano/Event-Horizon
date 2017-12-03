@@ -454,7 +454,7 @@ public class MainActivity extends AppCompatActivity
                 //FileBody contentFile = new FileBody(tmp);
                 //builder.addPart("file",contentFile);
 
-                ContentBody cd = new ByteArrayBody(byteUploadTarget, "my-file.dat");
+                ContentBody cd = new ByteArrayBody(byteUploadTarget, "image/jpeg", "file.jpg");
                 builder.addPart("file",cd);
 
 
