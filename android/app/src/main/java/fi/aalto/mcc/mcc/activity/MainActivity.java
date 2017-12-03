@@ -2,6 +2,7 @@ package fi.aalto.mcc.mcc.activity;
 
 import android.Manifest;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -51,6 +52,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -76,6 +78,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     public static final int CAMERA_REQUEST_CODE = 1;
+    public static final int MEDIA_REQUEST_CODE = 2;
     public static final int RECORD_REQUEST_CODE = 3;
     private String TAG = "Main";
 
@@ -85,8 +88,7 @@ public class MainActivity extends AppCompatActivity
 
     BarcodeDetector barcodeDetector;
 
-    Uri fileUri;
-    String mCurrentPhotoPath;
+    static Uri fileUri;
     UserObject userContext;
 
     private RecyclerView recyclerView;
@@ -220,20 +222,44 @@ public class MainActivity extends AppCompatActivity
         {
             makeRequest(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             return;
-        }
+        } else if(checkPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 
-        if(checkPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+            makeRequest(Manifest.permission.CAMERA);
+            return;
+        } else
         {
+            /*
             final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
             File xfile = getOutputMediaFile();
-            fileUri = Uri.fromFile(xfile);
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, xfile);
-
-            startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
-
+            if (!xfile.exists()) {
+                try {
+                    xfile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } else {
-                makeRequest(Manifest.permission.CAMERA);
+                xfile.delete();
+                try {
+                    xfile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            fileUri = Uri.fromFile(xfile);
+
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+            startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
+            */
+
+
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent, "Select an image"), MEDIA_REQUEST_CODE);
         }
+
+
     }
 
 
@@ -271,11 +297,19 @@ public class MainActivity extends AppCompatActivity
 
             Log.i(TAG, "A photograph was selected");
 
-            uri = data.getData();
+            if (data != null )fileUri = data.getData();
             try {
-                if (uri != null) originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                if (fileUri != null) originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
                 else originalBitmap = (Bitmap) data.getExtras().get("data");
             } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if(requestCode == MEDIA_REQUEST_CODE && resultCode==RESULT_OK) {
+            try {
+                if (data != null )fileUri = data.getData();
+                originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
+                Log.i(TAG, "An image was selected from Media Gallery");
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -290,11 +324,28 @@ public class MainActivity extends AppCompatActivity
             originalBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
             */
 
+            /*
+            FileOutputStream out = null;
+            try {
+                out = new FileOutputStream(fileUri.toString());
+                originalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }*/
+
 
             int value = doBarcodeClasssification(originalBitmap);
             if (value < 0) {
                 return;
-            } else{
+            } else {
 
                 AlbumObject ao;
 
@@ -321,13 +372,13 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private static File getOutputMediaFile(){
+    private File getOutputMediaFile(){
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "CameraDemo");
+                Environment.DIRECTORY_PICTURES), "EventPictures");
 
         if (!mediaStorageDir.exists()){
             if (!mediaStorageDir.mkdirs()){
-                Log.d("CameraDemo", "failed to create directory");
+                Log.d(this.TAG, "failed to create directory");
                 return null;
             }
         }
@@ -513,26 +564,6 @@ public class MainActivity extends AppCompatActivity
             mAuth.removeAuthStateListener(mAuthListener);
         }
     }
-
-    // copied from the android development pages; just added a Toast to show the storage location
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
-        Toast.makeText(this, mCurrentPhotoPath, Toast.LENGTH_LONG).show();
-        return image;
-    }
-
-
 
 
 

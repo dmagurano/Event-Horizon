@@ -6,6 +6,7 @@ package fi.aalto.mcc.mcc.adapter;
  */
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,11 +119,16 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
             return;
 
         }
-        else Glide.with(c).load(gridArray.get(position).getSmall())
+        else {
+            String path =  gridArray.get(position).getSmall();
+
+            Glide.with(c).load(Uri.parse(path))
                     .thumbnail(0.5f)
                     .crossFade()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(holder.thumbnail);
+
+        }
 
     }
 
