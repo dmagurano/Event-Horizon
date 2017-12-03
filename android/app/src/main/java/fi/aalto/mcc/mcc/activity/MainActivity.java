@@ -54,11 +54,18 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import com.bumptech.glide.Glide;
@@ -425,9 +432,9 @@ public class MainActivity extends AppCompatActivity
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
             nameValuePairs.add(new BasicNameValuePair("file", uploadTarget));
 
-            //XXX Matias, please add code to provide token and group
-            nameValuePairs.add(new BasicNameValuePair("idToken", "potato"));
-            nameValuePairs.add(new BasicNameValuePair("groupId", "sausage"));
+
+            //nameValuePairs.add(new BasicNameValuePair("idToken", "potato"));
+            //nameValuePairs.add(new BasicNameValuePair("groupId", "sausage"));
 
             //nameValuePairs.add(new BasicNameValuePair("idToken", userContext.getAuthToken()));
             //nameValuePairs.add(new BasicNameValuePair("groupId", userContext.getGroup()));
@@ -435,10 +442,20 @@ public class MainActivity extends AppCompatActivity
             try {
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost(uploadURL);
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                //XXX Matias, please add code to provide token and group
+                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+                builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+                builder.addPart("file", new StringBody(uploadTarget, ContentType.TEXT_PLAIN));
+                builder.addPart("idToken", new StringBody("potato", ContentType.TEXT_PLAIN));
+                builder.addPart("groupId", new StringBody("sausage", ContentType.TEXT_PLAIN));
+                httppost.setEntity(builder.build());
+
+                //httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
                 HttpResponse response = httpclient.execute(httppost);
                 String s = EntityUtils.toString(response.getEntity());
-                Log.i(TAG, "Connection response" + s);
+                Log.i(TAG, "Connection response: " + s);
 
             } catch (Exception e) {
                 Log.i(TAG, "Error in http connection " + e.toString());

@@ -56,8 +56,10 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.squareup.okhttp3:okhttp:3.9.1'
     compile 'org.apache.httpcomponents:httpclient:4.5.4'
-
-
+    //compile group: 'org.apache.httpcomponents' , name: 'httpclient-android' , version: '4.5.4'
+    compile('org.apache.httpcomponents:httpmime:4.3') {
+            exclude module: "httpclient"
+    }
 }
 
 
