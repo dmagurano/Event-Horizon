@@ -350,12 +350,12 @@ public class MainActivity extends AppCompatActivity
                 AlbumObject ao;
 
                 // XXX need to build album selector based on group later
-                if( value > 0 ) ao = albumList.get(0);
-                else ao = albumList.get(1);
+                if( value == 0 ) ao = albumList.get(1);
+                else ao = albumList.get(0);
 
 
                 GalleryObject obj = new GalleryObject();
-                obj.setCategory("Not human");
+                obj.setCategory("Not Human");
                 obj.setAuthor("Teppo");
                 obj.setSmall(fileUri.toString());
                 obj.setLarge(fileUri.toString());
@@ -639,7 +639,7 @@ public class MainActivity extends AppCompatActivity
         albumList.add(a);
 
 
-        a = new AlbumObject("Tyhjä", true);
+        a = new AlbumObject("Empty folder", true);
         albumList.add(a);
 
         adapter.notifyDataSetChanged();
