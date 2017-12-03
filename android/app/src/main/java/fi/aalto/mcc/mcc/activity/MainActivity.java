@@ -58,7 +58,9 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -119,6 +121,7 @@ public class MainActivity extends AppCompatActivity
 
     static Uri fileUri;
     String uploadTarget;
+    byte[] byteUploadTarget;
     UserObject userContext;
 
     private RecyclerView recyclerView;
@@ -409,9 +412,9 @@ public class MainActivity extends AppCompatActivity
     private void uploadToServer(Bitmap bm) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.JPEG, 90, baos);
-        byte[] byteImage = baos.toByteArray();
-        uploadTarget = Base64.encodeToString(byteImage, Base64.DEFAULT);
-        Log.i("base64", "uploading data: " + uploadTarget);
+        byteUploadTarget = baos.toByteArray();
+        //uploadTarget = Base64.encodeToString(byteUploadTarget, Base64.DEFAULT);
+        //Log.i("base64", "uploading data: " + uploadTarget);
 
         new asyncUpload().execute();
     }
@@ -446,7 +449,16 @@ public class MainActivity extends AppCompatActivity
                 //XXX Matias, please add code to provide token and group
                 MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                 builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-                builder.addPart("file", new StringBody(uploadTarget, ContentType.TEXT_PLAIN));
+
+                //File tmp = new File(fileUri.toString()); // XXX does not point to correct place for some reason
+                //FileBody contentFile = new FileBody(tmp);
+                //builder.addPart("file",contentFile);
+
+                ContentBody cd = new ByteArrayBody(byteUploadTarget, "my-file.dat");
+                builder.addPart("file",cd);
+
+
+                //builder.addPart("file", new StringBody(uploadTarget, ContentType.TEXT_PLAIN));
                 builder.addPart("idToken", new StringBody("potato", ContentType.TEXT_PLAIN));
                 builder.addPart("groupId", new StringBody("sausage", ContentType.TEXT_PLAIN));
                 httppost.setEntity(builder.build());
