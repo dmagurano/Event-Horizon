@@ -11,15 +11,21 @@ public class UserObject{
     public String name;
     public String email;
     public String group;
+    public String authToken;
 
     private UserObject() {
         // Default constructor required for calls to DataSnapshot.getValue(UserObject.class)
+        this.name = "Anonymous";
+        this.email = "dev@null.com";
+        this.group = "0";
+        this.authToken = "0";
     }
 
     public UserObject(String name, String email) {
         this.name = name;
         this.email = email;
-        this.group = null;
+        this.group = "0";
+        this.authToken = "0";
     }
 
     public String getName(){
@@ -33,6 +39,8 @@ public class UserObject{
     public String getGroup(){
         return group;
     }
+
+    public String getAuthToken() {return authToken;}
 
 }
 

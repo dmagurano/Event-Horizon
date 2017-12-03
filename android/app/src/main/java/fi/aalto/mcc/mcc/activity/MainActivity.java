@@ -1,6 +1,7 @@
 package fi.aalto.mcc.mcc.activity;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -41,6 +42,25 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.widget.ImageView;
 
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.util.Log;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -52,6 +72,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -81,6 +102,7 @@ public class MainActivity extends AppCompatActivity
     public static final int MEDIA_REQUEST_CODE = 2;
     public static final int RECORD_REQUEST_CODE = 3;
     private String TAG = "Main";
+    public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
 
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseAuth mAuth;
@@ -89,6 +111,7 @@ public class MainActivity extends AppCompatActivity
     BarcodeDetector barcodeDetector;
 
     static Uri fileUri;
+    String uploadTarget;
     UserObject userContext;
 
     private RecyclerView recyclerView;
@@ -228,6 +251,8 @@ public class MainActivity extends AppCompatActivity
             return;
         } else
         {
+            // XXX passing Uri to intent commmented out for time being (SM)
+            // due to unknown crash
             /*
             final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -252,7 +277,7 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
             */
 
-
+            // XXX using temporarily media selector for testing purposes (SM)
             Intent intent = new Intent();
             intent.setType("image/*");
             intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -293,6 +318,7 @@ public class MainActivity extends AppCompatActivity
         Bitmap originalBitmap = null;
         Uri uri = null;
 
+        // decode answer from camera intent with or without image path
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
 
             Log.i(TAG, "A photograph was selected");
@@ -304,6 +330,7 @@ public class MainActivity extends AppCompatActivity
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        // in case media gallery was used instead of camera, decode file path to bitmap
         } else if(requestCode == MEDIA_REQUEST_CODE && resultCode==RESULT_OK) {
             try {
                 if (data != null )fileUri = data.getData();
@@ -317,7 +344,7 @@ public class MainActivity extends AppCompatActivity
         if (originalBitmap != null) {
 
             /*
-            // resize
+            // do image resize if needed
             float aspectRatio = originalBitmap.getWidth() / (float) originalBitmap.getHeight();
             int width = 960;
             int height = Math.round(width / aspectRatio);
@@ -341,17 +368,19 @@ public class MainActivity extends AppCompatActivity
                 }
             }*/
 
-
+            // detect number of barcodes in image
             int value = doBarcodeClasssification(originalBitmap);
+
             if (value < 0) {
+                // classification failed
                 return;
             } else {
 
                 AlbumObject ao;
 
                 // XXX need to build album selector based on group later
-                if( value == 0 ) ao = albumList.get(1);
-                else ao = albumList.get(0);
+                if( value == 0 ) ao = albumList.get(1); // put in public folder
+                else ao = albumList.get(0);             // put in private folder
 
 
                 GalleryObject obj = new GalleryObject();
@@ -362,14 +391,69 @@ public class MainActivity extends AppCompatActivity
                 ao.add(obj);
                 adapter.notifyDataSetChanged();
 
+                // send new public image to server (testing image upload here)
+                if (value == 0) uploadToServer(originalBitmap);
             }
 
         }
 
-
-
-
     }
+
+    private void uploadToServer(Bitmap bm) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+        byte[] byteImage = baos.toByteArray();
+        uploadTarget = Base64.encodeToString(byteImage, Base64.DEFAULT);
+        Log.i("base64", "uploading data: " + uploadTarget);
+
+        new asyncUpload().execute();
+    }
+
+
+    public class asyncUpload extends AsyncTask<Void, Void, String> {
+
+        private ProgressDialog busy = new ProgressDialog(MainActivity.this);
+        protected void onPreExecute() {
+            super.onPreExecute();
+            busy.setMessage("Uploading to Server...");
+            busy.show();
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            nameValuePairs.add(new BasicNameValuePair("file", uploadTarget));
+
+            //XXX Matias, please add code to provide token and group
+            nameValuePairs.add(new BasicNameValuePair("idToken", "potato"));
+            nameValuePairs.add(new BasicNameValuePair("groupId", "sausage"));
+
+            //nameValuePairs.add(new BasicNameValuePair("idToken", userContext.getAuthToken()));
+            //nameValuePairs.add(new BasicNameValuePair("groupId", userContext.getGroup()));
+
+            try {
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost(uploadURL);
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                HttpResponse response = httpclient.execute(httppost);
+                String s = EntityUtils.toString(response.getEntity());
+                Log.i(TAG, "Connection response" + s);
+
+            } catch (Exception e) {
+                Log.i(TAG, "Error in http connection " + e.toString());
+            }
+            Log.i(TAG, "Upload done" );
+            return "Success";
+        }
+
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            busy.hide();
+            busy.dismiss();
+        }
+    }
+
 
 
     private File getOutputMediaFile(){
@@ -411,10 +495,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-    /**
-     * Converting dp to pixel
-     */
+     // Converting dp to pixel
     private int dpToPx(int dp) {
         Resources r = getResources();
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
