@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        initCoolbar();
+        initCollapsingToolbar();
 
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
@@ -276,6 +276,38 @@ public class MainActivity extends AppCompatActivity
                         map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
                     }
                     // XXX incomplete implamentation
+                    AlbumObject ao= albumList.get(1); // XXX resolve correct album
+                    GalleryObject obj = new GalleryObject(postSnapshot.getKey(), map );
+                    obj.setAuthor("unknown user"); // XXX resolve user
+                    ao.add(obj);
+                    adapter.notifyDataSetChanged();
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+
+
+
+        });
+
+        /*
+        mDatabase.child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.e("Count " ,""+snapshot.getChildrenCount());
+                for (DataSnapshot postSnapshot: snapshot.getChildren())
+                {
+                    HashMap<String, Object> map = new HashMap<>();
+                    for (DataSnapshot dataSnapshot: postSnapshot.getChildren())
+                    {
+                        map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
+                    }
+                    // XXX incomplete implamentation
                     AlbumObject ao= albumList.get(1);
                     GalleryObject obj = new GalleryObject(postSnapshot.getKey(), map, "unknown user");
                     ao.add(obj);
@@ -288,7 +320,11 @@ public class MainActivity extends AppCompatActivity
                 // Failed to read value
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
+
+
+
         });
+        */
 
         // XXX to be removed (SM)
         makeDummyAlbums();
@@ -499,7 +535,7 @@ public class MainActivity extends AppCompatActivity
 
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, "Connection error: " + e.toString(), Toast.LENGTH_SHORT).show();
-                Log.i(TAG, "Error in http connection " + e.toString());
+                Log.i(TAG, "Connection error: " + e.toString());
             }
             Log.i(TAG, "Upload done" );
             return "Success";
@@ -559,9 +595,10 @@ public class MainActivity extends AppCompatActivity
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
     }
 
-    private void initCoolbar() {
+    private void initCollapsingToolbar() {
         final CollapsingToolbarLayout collapsingToolbar =
                 (CollapsingToolbarLayout) findViewById(R.id.main_collapse_toolbar);
+
         collapsingToolbar.setTitle(" ");
         AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.appbar);
         appBarLayout.setExpanded(true);

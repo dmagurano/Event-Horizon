@@ -37,10 +37,9 @@ public class GalleryObject implements Serializable
         this.header = header;
     }
 
-    public GalleryObject(String id, HashMap<String, Object> map, String authorName) {
+    public GalleryObject(String id, HashMap<String, Object> map) {
         type = VIEW_NORMAL;
         this.id = id;
-        this.authorName = authorName;
 
         this.lowRes = map.get("low_res_url").toString();
         this.highRes = map.get("high_res_url").toString();
@@ -57,6 +56,23 @@ public class GalleryObject implements Serializable
              this.category = "Not Human";
         else this.category = "Human";
 
+    }
+
+    public void update(GalleryObject obj)
+    {
+        this.lowRes = obj.lowRes;
+        this.highRes = obj.highRes;
+        this.fullRes = obj.fullRes;
+
+        this.id = obj.id;
+        this.author_id = obj.author_id;
+        this.authorName = obj.authorName;
+        this.imageTimestamp = obj.imageTimestamp;
+        this.imageDescription = obj.imageDescription;
+
+        this.type = obj.type;
+        this.header = obj.header;
+        this.category = obj.category;
     }
 
 
@@ -82,6 +98,14 @@ public class GalleryObject implements Serializable
 
     public void setXL(String xl) {
         this.fullRes = xl;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getAuthor() {

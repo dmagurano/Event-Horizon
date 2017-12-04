@@ -72,6 +72,20 @@ public class AlbumObject implements Serializable {
 
     public void add(GalleryObject obj)
     {
+        if (obj == null) return;
+
+        // check if already exists and update data
+        if(obj.getId() != null && obj.getId() != "") {
+            for (int i = 0; i < listObjects.size(); i++) {
+
+                if (listObjects.get(i).getId() == obj.getId()) {
+
+                    listObjects.get(i).update(obj);
+                    return;
+                }
+            }
+        }
+        // add new object
         listObjects.add(obj);
     }
 
