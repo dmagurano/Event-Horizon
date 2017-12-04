@@ -481,7 +481,6 @@ public class MainActivity extends AppCompatActivity
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost(uploadURL);
 
-
                 MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                 builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 
@@ -495,9 +494,11 @@ public class MainActivity extends AppCompatActivity
 
                 HttpResponse response = httpclient.execute(httppost);
                 String s = EntityUtils.toString(response.getEntity());
+                Toast.makeText(MainActivity.this, "Server: " + s, Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "Connection response: " + s);
 
             } catch (Exception e) {
+                Toast.makeText(MainActivity.this, "Connection error: " + e.toString(), Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "Error in http connection " + e.toString());
             }
             Log.i(TAG, "Upload done" );

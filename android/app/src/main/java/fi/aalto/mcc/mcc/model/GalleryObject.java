@@ -16,14 +16,11 @@ public class GalleryObject implements Serializable
     private String lowRes, highRes, fullRes;
 
     // metadata
-
     private String id;
     private String author_id;
     private String authorName;
-    private String authorImage;
     private String imageTimestamp;
     private String imageDescription;
-    private float lat, lon;
 
     // object classification data
     private int type;
@@ -50,7 +47,13 @@ public class GalleryObject implements Serializable
         this.fullRes = map.get("full_res_url").toString();
         this.author_id =  map.get("author").toString();
 
-        if ( map.get("has_people").toString() == "false")
+        // try decoding category string if any exists
+        if (map.get("category") !=null)
+        {
+            this.category = map.get("category").toString();
+        }
+        // else revert to old format
+        else if ( map.get("has_people").toString() == "false")
              this.category = "Not Human";
         else this.category = "Human";
 
