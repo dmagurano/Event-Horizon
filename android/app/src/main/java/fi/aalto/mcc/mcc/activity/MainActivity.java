@@ -119,6 +119,8 @@ public class MainActivity extends AppCompatActivity
     private String TAG = "Main";
     public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
     public static final String IMAGES_CHILD = "Images";
+    public static final String GROUP_CHILD = "group";
+    public static final String USERS_CHILD = "Users";
 
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseAuth mAuth;
@@ -132,7 +134,7 @@ public class MainActivity extends AppCompatActivity
     static Uri fileUri;
     String uploadTarget;
     byte[] byteUploadTarget;
-    UserObject userContext;
+    String idToken;
 
     private RecyclerView recyclerView;
     private AlbumViewAdapter adapter;
@@ -147,7 +149,6 @@ public class MainActivity extends AppCompatActivity
         mUser = mAuth.getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        userContext = new UserObject("nano", "nano");
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -157,10 +158,8 @@ public class MainActivity extends AppCompatActivity
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + mUser.getUid());
 
-                    userContext.setUid(mUser.getUid());
-                    userContext.setName(mUser.getDisplayName());
                     if (mUser.getPhotoUrl() != null) {
-                        userContext.setAvatarImage(mUser.getPhotoUrl().toString());
+                        //userContext.setAvatarImage(mUser.getPhotoUrl().toString());
                     }
 
                     //Get id token and send to backend via HTTPS
@@ -168,10 +167,8 @@ public class MainActivity extends AppCompatActivity
                             .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                                 public void onComplete(@NonNull Task<GetTokenResult> task) {
                                     if (task.isSuccessful()) {
-                                        String idToken = task.getResult().getToken();
-                                        userContext.setAuthToken(idToken);
-                                        String group = mDatabase.child("Users").child(mUser.getUid()).child("group").toString();
-                                        userContext.setGroup(group);
+                                        idToken = task.getResult().getToken();
+                                        String group = mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).toString();
 
                                         Log.d(TAG, "IDtoken: " + idToken);
 
@@ -441,7 +438,7 @@ public class MainActivity extends AppCompatActivity
 
                 GalleryObject obj = new GalleryObject();
                 obj.setCategory("Not Human");
-                obj.setAuthor(userContext.getName());
+                obj.setAuthor(mUser.getDisplayName());
                 obj.setSmall(fileUri.toString());
                 obj.setLarge(fileUri.toString());
                 ao.add(obj);
@@ -491,8 +488,9 @@ public class MainActivity extends AppCompatActivity
                 ContentBody cd = new ByteArrayBody(byteUploadTarget, "image/jpeg", "file.jpg");
                 builder.addPart("file",cd);
 
-                builder.addPart("idToken", new StringBody(userContext.getAuthToken(), ContentType.TEXT_PLAIN));
-                builder.addPart("groupId", new StringBody(userContext.getGroup(), ContentType.TEXT_PLAIN));
+                String currentGroup = mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).toString();
+                builder.addPart("idToken", new StringBody(idToken, ContentType.TEXT_PLAIN));
+                builder.addPart("groupId", new StringBody(currentGroup, ContentType.TEXT_PLAIN));
                 httppost.setEntity(builder.build());
 
                 HttpResponse response = httpclient.execute(httppost);
@@ -666,8 +664,7 @@ public class MainActivity extends AppCompatActivity
             FirebaseUser user = mAuth.getCurrentUser();
             if(user != null){
                 String uid = mAuth.getCurrentUser().getUid();
-                String group_id = mDatabase.child("Users").child(uid).child("group").toString();
-                userContext.setGroup(group_id);
+                String group_id = mDatabase.child(USERS_CHILD).child(uid).child(GROUP_CHILD).toString();
 
                 i.putExtra("USER_IN_GROUP", group_id != null);
 
