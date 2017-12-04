@@ -40,6 +40,7 @@ import android.view.MenuItem;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
 import android.net.Uri;
@@ -76,6 +77,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -87,6 +90,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import android.net.Uri;
@@ -95,6 +99,7 @@ import android.widget.Toast;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import fi.aalto.mcc.mcc.R;
@@ -113,7 +118,7 @@ public class MainActivity extends AppCompatActivity
     public static final int RECORD_REQUEST_CODE = 3;
     private String TAG = "Main";
     public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
-    public static final String IMAGES_CHILD = "images";
+    public static final String IMAGES_CHILD = "Images";
 
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseAuth mAuth;
@@ -259,6 +264,34 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+        mDatabase.child(IMAGES_CHILD).addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.e("Count " ,""+snapshot.getChildrenCount());
+                for (DataSnapshot postSnapshot: snapshot.getChildren())
+                {
+                    HashMap<String, Object> map = new HashMap<>();
+                    for (DataSnapshot dataSnapshot: postSnapshot.getChildren())
+                    {
+                        map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
+                    }
+                    // XXX incomplete implamentation
+                    AlbumObject ao= albumList.get(1);
+                    GalleryObject obj = new GalleryObject(postSnapshot.getKey(), map, "unknown user");
+                    ao.add(obj);
+                    adapter.notifyDataSetChanged();
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
 
         // XXX to be removed (SM)
         makeDummyAlbums();

@@ -1,6 +1,7 @@
 package fi.aalto.mcc.mcc.model;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * Created by user on 14/11/2017.
@@ -13,9 +14,17 @@ public class GalleryObject implements Serializable
     private static final int VIEW_NORMAL = 1;
 
     // image location as filepath or URL
-    private String pathThumbnail, pathImage;
+    //public  String  , low_res_url, full_res_url;
+    //public  String  has_people;
+    //private String  author;
+
+
+    private String lowRes, highRes, fullRes;
 
     // metadata
+
+    private String id;
+    private String author_id;
     private String authorName;
     private String authorImage;
     private String imageTimestamp;
@@ -23,7 +32,7 @@ public class GalleryObject implements Serializable
     private float lat, lon;
 
     // object classification data
-    private boolean isPublic;
+    //private boolean isPublic;
     private int type;
     private String header;
 
@@ -38,29 +47,54 @@ public class GalleryObject implements Serializable
         this.header = header;
     }
 
+    public GalleryObject(String id, HashMap<String, Object> map, String authorName) {
+        type = VIEW_NORMAL;
+        this.id = id;
+        this.authorName = authorName;
+
+        this.lowRes = map.get("low_res_url").toString();
+        this.highRes = map.get("high_res_url").toString();
+        this.fullRes = map.get("full_res_url").toString();
+        this.author_id =  map.get("author").toString();
+
+        if ( map.get("has_people").toString() == "false")
+             this.category = "Not Human";
+        else this.category = "Human";
+
+    }
+
+
     public GalleryObject( String small, String large, String timestamp, boolean ispublic, String category, String author) {
-        this.pathThumbnail = small;
-        this.pathImage = large;
+        this.lowRes = small;
+        this.highRes = large;
         this.imageTimestamp = timestamp;
-        this.isPublic = ispublic;
+        //this.isPublic = ispublic;
         this.category = category;
         this.authorName = author;
     }
 
     public String getSmall() {
-        return pathThumbnail;
+        return lowRes;
     }
 
     public void setSmall(String small) {
-        this.pathThumbnail = small;
+        this.lowRes = small;
     }
 
     public String getLarge() {
-        return pathImage;
+        return highRes;
     }
 
     public void setLarge(String large) {
-        this.pathImage = large;
+        this.highRes = large;
+    }
+
+    public String getXL() {
+        return fullRes;
+    }
+
+    public void setXL(String xl) {
+        this.fullRes = xl;
     }
 
     public String getAuthor() {
@@ -96,11 +130,13 @@ public class GalleryObject implements Serializable
         this.imageDescription = description;
     }
 
+    /*
     public boolean isPublic() {
         return isPublic;
     }
 
     public void setPublic(Boolean value)   {  this.isPublic = value; }
+    */
 
     public int getType() {
         return type;
