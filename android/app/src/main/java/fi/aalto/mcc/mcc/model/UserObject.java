@@ -8,39 +8,55 @@ package fi.aalto.mcc.mcc.model;
 
 public class UserObject{
 
-    public String name;
-    public String email;
-    public String group;
-    public String authToken;
+    public String mScreenName;
+    public String mEmail;
+    public String mGroup;
+    public String mAuthToken;
+    public String mUid;
+    public String mPhotoUrl;
 
     private UserObject() {
         // Default constructor required for calls to DataSnapshot.getValue(UserObject.class)
-        this.name = "Anonymous";
-        this.email = "dev@null.com";
-        this.group = "0";
-        this.authToken = "0";
+        this.mScreenName = "Anonymous";
+        this.mEmail = "dev@null.com";
+        this.mGroup = "na";
+        this.mAuthToken = "na";
     }
 
     public UserObject(String name, String email) {
-        this.name = name;
-        this.email = email;
-        this.group = "0";
-        this.authToken = "0";
+        this.mScreenName = name;
+        this.mEmail = email;
+        this.mGroup = "na";
+        this.mAuthToken = "na";
     }
 
     public String getName(){
-        return name;
+        return mScreenName;
     }
 
+    public void setName(String name) { this.mScreenName = name; }
+
     public String getEmail(){
-        return email;
+        return mEmail;
     }
 
     public String getGroup(){
-        return group;
+        return mGroup;
     }
 
-    public String getAuthToken() {return authToken;}
+    public void setGroup(String group) { this.mGroup = group; }
+
+    public String getAuthToken() {return mAuthToken;}
+
+    public void setAuthToken(String token) { this.mAuthToken = token; }
+
+    public String getUid() {return mUid;}
+
+    public void setUid(String uid) { this.mUid = uid; }
+
+    public String getAvatarImage() {return mPhotoUrl;}
+
+    public void setAvatarImage(String photoUrl) {this.mPhotoUrl = photoUrl;}
 
 }
 

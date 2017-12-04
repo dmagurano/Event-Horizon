@@ -95,6 +95,7 @@ import android.widget.Toast;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import fi.aalto.mcc.mcc.R;
 import fi.aalto.mcc.mcc.adapter.AlbumViewAdapter;
@@ -112,10 +113,14 @@ public class MainActivity extends AppCompatActivity
     public static final int RECORD_REQUEST_CODE = 3;
     private String TAG = "Main";
     public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
+    public static final String IMAGES_CHILD = "images";
 
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
+    private FirebaseUser mUser;
+    private FirebaseRemoteConfig mRemoteConfig;
+
 
     BarcodeDetector barcodeDetector;
 
@@ -134,23 +139,34 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        userContext = new UserObject("nano", "nano");
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
+                mUser = firebaseAuth.getCurrentUser();
+                if (mUser != null) {
                     // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mUser.getUid());
 
+                    userContext.setUid(mUser.getUid());
+                    userContext.setName(mUser.getDisplayName());
+                    if (mUser.getPhotoUrl() != null) {
+                        userContext.setAvatarImage(mUser.getPhotoUrl().toString());
+                    }
 
                     //Get id token and send to backend via HTTPS
-                    user.getIdToken(true)
+                    mUser.getIdToken(true)
                             .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                                 public void onComplete(@NonNull Task<GetTokenResult> task) {
                                     if (task.isSuccessful()) {
                                         String idToken = task.getResult().getToken();
+                                        userContext.setAuthToken(idToken);
+                                        String group = mDatabase.child("Users").child(mUser.getUid()).child("group").toString();
+                                        userContext.setGroup(group);
 
                                         Log.d(TAG, "IDtoken: " + idToken);
 
@@ -446,21 +462,17 @@ public class MainActivity extends AppCompatActivity
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost(uploadURL);
 
-                //XXX Matias, please add code to provide token and group
+
                 MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                 builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-
-                //File tmp = new File(fileUri.toString()); // XXX does not point to correct place for some reason
-                //FileBody contentFile = new FileBody(tmp);
-                //builder.addPart("file",contentFile);
 
                 ContentBody cd = new ByteArrayBody(byteUploadTarget, "image/jpeg", "file.jpg");
                 builder.addPart("file",cd);
 
 
                 //builder.addPart("file", new StringBody(uploadTarget, ContentType.TEXT_PLAIN));
-                builder.addPart("idToken", new StringBody("potato", ContentType.TEXT_PLAIN));
-                builder.addPart("groupId", new StringBody("sausage", ContentType.TEXT_PLAIN));
+                builder.addPart("idToken", new StringBody(userContext.getAuthToken(), ContentType.TEXT_PLAIN));
+                builder.addPart("groupId", new StringBody(userContext.getGroup(), ContentType.TEXT_PLAIN));
                 httppost.setEntity(builder.build());
 
                 //httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
@@ -637,6 +649,7 @@ public class MainActivity extends AppCompatActivity
             if(user != null){
                 String uid = mAuth.getCurrentUser().getUid();
                 String group_id = mDatabase.child("Users").child(uid).child("group").toString();
+                userContext.setGroup(group_id);
 
                 i.putExtra("USER_IN_GROUP", group_id != null);
 
