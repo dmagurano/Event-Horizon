@@ -731,7 +731,7 @@ public class MainActivity extends AppCompatActivity
         for (int i = 8; i < 20; i++) {
             GalleryObject obj = new GalleryObject();
             if(i == 9) obj.setCategory("Human");
-            else if(i == 10) obj.setCategory("Not human");
+            else if(i == 10) obj.setCategory("Not Human");
             else if(i == 11) obj.setCategory("Something else");
             else obj.setCategory("Test");
 
