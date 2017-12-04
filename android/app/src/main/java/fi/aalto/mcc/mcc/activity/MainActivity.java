@@ -433,26 +433,22 @@ public class MainActivity extends AppCompatActivity
             if (value < 0) {
                 // classification failed
                 return;
-            } else {
-
+            } else if (value > 0)
+                {
+                // put it in private folder
                 AlbumObject ao;
-
-                // XXX need to build album selector based on group later
-                if( value == 0 ) ao = albumList.get(1); // put in public folder
-                else ao = albumList.get(0);             // put in private folder
-
+                ao = albumList.get(0);
 
                 GalleryObject obj = new GalleryObject();
                 obj.setCategory("Not Human");
-                obj.setAuthor("Teppo");
+                obj.setAuthor(userContext.getName());
                 obj.setSmall(fileUri.toString());
                 obj.setLarge(fileUri.toString());
                 ao.add(obj);
                 adapter.notifyDataSetChanged();
 
-                // send new public image to server (testing image upload here)
-                if (value == 0) uploadToServer(originalBitmap);
-            }
+                // otherwise upload to server
+            } else uploadToServer(originalBitmap);
 
         }
 
@@ -484,13 +480,6 @@ public class MainActivity extends AppCompatActivity
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
             nameValuePairs.add(new BasicNameValuePair("file", uploadTarget));
 
-
-            //nameValuePairs.add(new BasicNameValuePair("idToken", "potato"));
-            //nameValuePairs.add(new BasicNameValuePair("groupId", "sausage"));
-
-            //nameValuePairs.add(new BasicNameValuePair("idToken", userContext.getAuthToken()));
-            //nameValuePairs.add(new BasicNameValuePair("groupId", userContext.getGroup()));
-
             try {
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost(uploadURL);
@@ -502,13 +491,9 @@ public class MainActivity extends AppCompatActivity
                 ContentBody cd = new ByteArrayBody(byteUploadTarget, "image/jpeg", "file.jpg");
                 builder.addPart("file",cd);
 
-
-                //builder.addPart("file", new StringBody(uploadTarget, ContentType.TEXT_PLAIN));
                 builder.addPart("idToken", new StringBody(userContext.getAuthToken(), ContentType.TEXT_PLAIN));
                 builder.addPart("groupId", new StringBody(userContext.getGroup(), ContentType.TEXT_PLAIN));
                 httppost.setEntity(builder.build());
-
-                //httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
                 HttpResponse response = httpclient.execute(httppost);
                 String s = EntityUtils.toString(response.getEntity());

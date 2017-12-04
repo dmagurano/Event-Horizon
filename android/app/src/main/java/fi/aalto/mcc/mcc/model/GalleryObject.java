@@ -13,12 +13,6 @@ public class GalleryObject implements Serializable
     private static final int VIEW_HEADER = 0;
     private static final int VIEW_NORMAL = 1;
 
-    // image location as filepath or URL
-    //public  String  , low_res_url, full_res_url;
-    //public  String  has_people;
-    //private String  author;
-
-
     private String lowRes, highRes, fullRes;
 
     // metadata
@@ -32,7 +26,6 @@ public class GalleryObject implements Serializable
     private float lat, lon;
 
     // object classification data
-    //private boolean isPublic;
     private int type;
     private String header;
 
@@ -63,15 +56,6 @@ public class GalleryObject implements Serializable
 
     }
 
-
-    public GalleryObject( String small, String large, String timestamp, boolean ispublic, String category, String author) {
-        this.lowRes = small;
-        this.highRes = large;
-        this.imageTimestamp = timestamp;
-        //this.isPublic = ispublic;
-        this.category = category;
-        this.authorName = author;
-    }
 
     public String getSmall() {
         return lowRes;
@@ -130,13 +114,6 @@ public class GalleryObject implements Serializable
         this.imageDescription = description;
     }
 
-    /*
-    public boolean isPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(Boolean value)   {  this.isPublic = value; }
-    */
 
     public int getType() {
         return type;
