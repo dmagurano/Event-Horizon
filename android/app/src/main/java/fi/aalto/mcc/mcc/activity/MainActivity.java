@@ -453,6 +453,7 @@ public class MainActivity extends AppCompatActivity
         private ProgressDialog busy = new ProgressDialog(MainActivity.this);
         protected void onPreExecute() {
             super.onPreExecute();
+            // XXX crashes on emulator, but not on device (SM)
             busy.setMessage("Uploading to Server...");
             busy.show();
         }
