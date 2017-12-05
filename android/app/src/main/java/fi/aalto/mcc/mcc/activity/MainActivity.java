@@ -275,9 +275,9 @@ public class MainActivity extends AppCompatActivity
                     public void run() {
                         addImageListener();
                     }
-                }, 1000);
+                }, 5000);
 
-    
+
     }
 
 
@@ -759,7 +759,7 @@ public class MainActivity extends AppCompatActivity
                            GalleryObject obj = new GalleryObject(imageSnapshot.getKey(), map);
                            obj.setAuthor("unknown user"); // XXX resolve user
                            for (int i = 0; i < albumList.size(); i++) {
-                               if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(obj.getGroup())) {
+                               if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(keySnapshot.getKey())) {
                                    albumList.get(i).add(obj);
                                }
                            }
