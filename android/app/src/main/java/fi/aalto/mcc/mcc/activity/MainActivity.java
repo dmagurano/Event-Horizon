@@ -269,7 +269,7 @@ public class MainActivity extends AppCompatActivity
         // XXX need to force enumeration order, this is quickfix for testing purposes (SM)
         privateAlbum = makePrivateAlbum();
         addGroupListener();
-        /*
+
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
@@ -277,7 +277,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }, 1000);
 
-    */
+    
     }
 
 
