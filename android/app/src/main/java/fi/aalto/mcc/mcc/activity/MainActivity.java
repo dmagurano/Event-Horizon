@@ -269,6 +269,7 @@ public class MainActivity extends AppCompatActivity
         // XXX need to force enumeration order, this is quickfix for testing purposes (SM)
         privateAlbum = makePrivateAlbum();
         addGroupListener();
+        /*
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
@@ -276,6 +277,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }, 1000);
 
+    */
     }
 
 
@@ -746,17 +748,20 @@ public class MainActivity extends AppCompatActivity
            {
                @Override
                public void onDataChange(DataSnapshot snapshot) {
-                   Log.e("Count ", "" + snapshot.getChildrenCount());
-                   for (DataSnapshot postSnapshot : snapshot.getChildren()) {
-                       HashMap<String, Object> map = new HashMap<>();
-                       for (DataSnapshot dataSnapshot : postSnapshot.getChildren()) {
-                           map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
-                       }
-                       GalleryObject obj = new GalleryObject(postSnapshot.getKey(), map);
-                       obj.setAuthor("unknown user"); // XXX resolve user
-                       for (int i = 0; i < albumList.size(); i++) {
-                           if (albumList.get(i).getId()!=null && albumList.get(i).getId().equals( obj.getGroup())) {
-                               albumList.get(i).add(obj);
+                   Log.e("Group Count ", "" + snapshot.getChildrenCount());
+
+                   for (DataSnapshot keySnapshot : snapshot.getChildren()) {
+                       for (DataSnapshot imageSnapshot : keySnapshot.getChildren()) {
+                           HashMap<String, Object> map = new HashMap<>();
+                           for (DataSnapshot dataSnapshot : imageSnapshot.getChildren()) {
+                               map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
+                           }
+                           GalleryObject obj = new GalleryObject(imageSnapshot.getKey(), map);
+                           obj.setAuthor("unknown user"); // XXX resolve user
+                           for (int i = 0; i < albumList.size(); i++) {
+                               if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(obj.getGroup())) {
+                                   albumList.get(i).add(obj);
+                               }
                            }
                        }
                    }
