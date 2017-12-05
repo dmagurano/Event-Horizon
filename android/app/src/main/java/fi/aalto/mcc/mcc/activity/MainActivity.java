@@ -151,11 +151,13 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // initialize firebase stuff
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
 
+        // something incomplete by Matias
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -198,27 +200,35 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
+        // initialize toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         initCollapsingToolbar();
 
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        // load banner image to toolbar
+        try {
+            Glide.with(this).load(R.drawable.backdrop).into((ImageView) findViewById(R.id.backdrop));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+        // initialize album view as main view
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         albumList = new ArrayList<>();
         adapter = new AlbumViewAdapter(this, albumList);
-
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(3), true));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
 
+        // initialize barcode detector (this may take a minute on a new phone)
         barcodeDetector =
                 new BarcodeDetector.Builder(getApplicationContext())
                         .setBarcodeFormats(Barcode.ALL_FORMATS)
                         .build();
 
+        // add click listener to album view
         recyclerView.addOnItemTouchListener(new AlbumViewAdapter
                 .AlbumTouchListener(this
                 .getApplicationContext(), recyclerView, new AlbumViewAdapter.ClickListener() {
@@ -244,13 +254,7 @@ public class MainActivity extends AppCompatActivity
         }));
 
 
-
-        try {
-            Glide.with(this).load(R.drawable.backdrop).into((ImageView) findViewById(R.id.backdrop));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        // add camera button to main view
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -259,6 +263,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        // add main navigation
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -268,10 +273,13 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // XXX need to force enumeration order, this is quickfix for testing purposes (SM)
+        // load images from private folder
         privateAlbum = makePrivateAlbum();
+
+        // add firebase listeners
         addGroupListener();
 
+        // XXX need to force enumeration order, this is quickfix for testing purposes (SM)
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
@@ -765,83 +773,3 @@ public class MainActivity extends AppCompatActivity
 
 
 
-
-    //  a garbage generator for testing purposes
-    private void makeDummyAlbums() {
-
-        String [] samples = getResources().getStringArray(R.array.test_images);;
-
-        AlbumObject a = new AlbumObject("Private", false);
-        for (int i = 0; i < 8; i++) {
-            GalleryObject obj = new GalleryObject();
-            if(i%2 == 0) obj.setCategory("Human");
-            else obj.setCategory("Not Human");
-            obj.setAuthor("Pätkä");
-            if(i%3 == 0) obj.setAuthor("Pekka");
-            obj.setSmall(samples[i]);
-            obj.setLarge(samples[i]);
-            a.add(obj);
-        }
-        albumList.add(a);
-
-        a = new AlbumObject("IXDA", true);
-        for (int i = 8; i < 20; i++) {
-            GalleryObject obj = new GalleryObject();
-            if(i == 9) obj.setCategory("Human");
-            else if(i == 10) obj.setCategory("Not Human");
-            else if(i == 11) obj.setCategory("Something else");
-            else obj.setCategory("Test");
-
-
-            if(i == 9) obj.setAuthor("Matti");
-            else if(i == 10) obj.setAuthor("Teppo");
-            else if(i == 11) obj.setAuthor("Teppo");
-            else if(i == 12) obj.setAuthor("Seppo");
-            else if(i == 13) obj.setAuthor("Seppo");
-            else if(i == 14) obj.setAuthor("Seppo");
-            else if(i == 15) obj.setAuthor("Seppo");
-            else obj.setAuthor("Jaakko");
-
-
-            obj.setSmall(samples[i]);
-            obj.setLarge(samples[i]);
-            a.add(obj);
-        }
-        albumList.add(a);
-
-        a = new AlbumObject("Wappu", true);
-        for (int i = 20; i < 32; i++) {
-            GalleryObject obj = new GalleryObject();
-            if(i%2 == 0) obj.setCategory("Human");
-            else obj.setCategory("Not Human");
-            obj.setAuthor("Pätkä");
-            if(i%3 == 0) obj.setAuthor("Pekka");
-
-            obj.setSmall(samples[i]);
-            obj.setLarge(samples[i]);
-            a.add(obj);
-        }
-        albumList.add(a);
-        a = new AlbumObject("Miscellaneous", true);
-        for (int i = 32; i < 40; i++) {
-            GalleryObject obj = new GalleryObject();
-            if(i%2 == 0) obj.setCategory("Human");
-            else obj.setCategory("Not Human");
-            obj.setAuthor("Pätkä");
-            if(i%3 == 0) obj.setAuthor("Pekka");
-
-            obj.setSmall(samples[i]);
-            obj.setLarge(samples[i]);
-            a.add(obj);
-        }
-        albumList.add(a);
-
-
-        a = new AlbumObject("Empty folder", true);
-        albumList.add(a);
-
-        adapter.notifyDataSetChanged();
-    }
-
-
-}
