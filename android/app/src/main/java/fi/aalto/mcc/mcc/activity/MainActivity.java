@@ -74,6 +74,8 @@ import java.util.ArrayList;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
@@ -120,6 +122,7 @@ public class MainActivity extends AppCompatActivity
     public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
     public static final String IMAGES_CHILD = "Images";
     public static final String GROUP_CHILD = "group";
+    public static final String GROUPS_CHILD = "Groups";
     public static final String USERS_CHILD = "Users";
 
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -139,6 +142,7 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView recyclerView;
     private AlbumViewAdapter adapter;
     private ArrayList<AlbumObject> albumList;
+    AlbumObject privateAlbum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -262,72 +266,16 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
-        mDatabase.child(IMAGES_CHILD).addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Log.e("Count " ,""+snapshot.getChildrenCount());
-                for (DataSnapshot postSnapshot: snapshot.getChildren())
-                {
-                    HashMap<String, Object> map = new HashMap<>();
-                    for (DataSnapshot dataSnapshot: postSnapshot.getChildren())
-                    {
-                        map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
+        // XXX need to force enumeration order, this is quickfix for testing purposes (SM)
+        privateAlbum = makePrivateAlbum();
+        addGroupListener();
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        addImageListener();
                     }
-                    // XXX incomplete implamentation
-                    AlbumObject ao= albumList.get(1); // XXX resolve correct album
-                    GalleryObject obj = new GalleryObject(postSnapshot.getKey(), map );
-                    obj.setAuthor("unknown user"); // XXX resolve user
-                    ao.add(obj);
-                    adapter.notifyDataSetChanged();
+                }, 1000);
 
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-
-
-
-        });
-
-        /*
-        mDatabase.child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Log.e("Count " ,""+snapshot.getChildrenCount());
-                for (DataSnapshot postSnapshot: snapshot.getChildren())
-                {
-                    HashMap<String, Object> map = new HashMap<>();
-                    for (DataSnapshot dataSnapshot: postSnapshot.getChildren())
-                    {
-                        map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
-                    }
-                    // XXX incomplete implamentation
-                    AlbumObject ao= albumList.get(1);
-                    GalleryObject obj = new GalleryObject(postSnapshot.getKey(), map, "unknown user");
-                    ao.add(obj);
-                    adapter.notifyDataSetChanged();
-
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-
-
-
-        });
-        */
-
-        // XXX to be removed (SM)
-        makeDummyAlbums();
     }
 
 
@@ -739,6 +687,86 @@ public class MainActivity extends AppCompatActivity
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
+    }
+
+
+    public AlbumObject makePrivateAlbum() {
+
+        String[] samples = getResources().getStringArray(R.array.test_images);
+
+        AlbumObject a = new AlbumObject("Private", false);
+
+        for (int i = 0; i < 8; i++) {
+            GalleryObject obj = new GalleryObject();
+            if (i % 2 == 0) obj.setCategory("Human");
+            else obj.setCategory("Not Human");
+            obj.setAuthor("Pätkä");
+            if (i % 3 == 0) obj.setAuthor("Pekka");
+            obj.setSmall(samples[i]);
+            obj.setLarge(samples[i]);
+            a.add(obj);
+        }
+
+        return a;
+    }
+
+    public void addGroupListener() {
+        mDatabase.child(GROUPS_CHILD).addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.e("Count " ,""+snapshot.getChildrenCount());
+                albumList.clear();
+                albumList.add(privateAlbum);
+
+                for (DataSnapshot postSnapshot: snapshot.getChildren())
+                {
+                    HashMap<String, Object> map = new HashMap<>();
+                    for (DataSnapshot dataSnapshot: postSnapshot.getChildren())
+                    {
+                        map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
+                    }
+
+                    AlbumObject obj = new AlbumObject(postSnapshot.getKey(), map);
+                    albumList.add(obj);
+                }
+                adapter.notifyDataSetChanged();
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    public void addImageListener()
+    {
+        mDatabase.child(IMAGES_CHILD).addValueEventListener(new ValueEventListener()
+           {
+               @Override
+               public void onDataChange(DataSnapshot snapshot) {
+                   Log.e("Count ", "" + snapshot.getChildrenCount());
+                   for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                       HashMap<String, Object> map = new HashMap<>();
+                       for (DataSnapshot dataSnapshot : postSnapshot.getChildren()) {
+                           map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
+                       }
+                       GalleryObject obj = new GalleryObject(postSnapshot.getKey(), map);
+                       obj.setAuthor("unknown user"); // XXX resolve user
+                       for (int i = 0; i < albumList.size(); i++) {
+                           if (albumList.get(i).getId()!=null && albumList.get(i).getId().equals( obj.getGroup())) {
+                               albumList.get(i).add(obj);
+                           }
+                       }
+                   }
+                   adapter.notifyDataSetChanged();
+               }
+               @Override
+               public void onCancelled(DatabaseError error) {
+                   Log.w(TAG, "Failed to read value.", error.toException());
+               }
+           });
     }
 
 

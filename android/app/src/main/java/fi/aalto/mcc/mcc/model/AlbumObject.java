@@ -2,6 +2,7 @@ package fi.aalto.mcc.mcc.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by user on 17/11/2017.
@@ -18,7 +19,17 @@ public class AlbumObject implements Serializable {
 
     private ArrayList<GalleryObject> listObjects;
     private String name;
+    private String Id;
     private boolean isPublic;
+
+    public AlbumObject(String id, HashMap<String, Object> map) {
+        listObjects = new ArrayList<GalleryObject>();
+        this.Id = id;
+        this.isPublic = true;
+
+        if (map.get("name") != null) this.name =  map.get("name").toString();
+        else this.name = "broken data";
+    }
 
     public AlbumObject() {
         listObjects = new ArrayList<GalleryObject>();
@@ -45,6 +56,8 @@ public class AlbumObject implements Serializable {
     public int size() {
         return listObjects.size();
     }
+
+    public String getId() {return Id;}
 
     public String thumbnail() {
         String result = "";
@@ -78,8 +91,7 @@ public class AlbumObject implements Serializable {
         if(obj.getId() != null && obj.getId() != "") {
             for (int i = 0; i < listObjects.size(); i++) {
 
-                if (listObjects.get(i).getId() == obj.getId()) {
-
+                if (listObjects.get(i).getId().equals(obj.getId())) {
                     listObjects.get(i).update(obj);
                     return;
                 }

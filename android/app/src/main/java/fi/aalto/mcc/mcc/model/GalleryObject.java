@@ -18,6 +18,7 @@ public class GalleryObject implements Serializable
     // metadata
     private String id;
     private String author_id;
+    private String group_id;
     private String authorName;
     private String imageTimestamp;
     private String imageDescription;
@@ -41,10 +42,11 @@ public class GalleryObject implements Serializable
         type = VIEW_NORMAL;
         this.id = id;
 
-        this.lowRes = map.get("low_res_url").toString();
-        this.highRes = map.get("high_res_url").toString();
-        this.fullRes = map.get("full_res_url").toString();
-        this.author_id =  map.get("author").toString();
+        if (map.get("low_res_url") != null ) this.lowRes = map.get("low_res_url").toString();
+        if (map.get("high_res_url") != null ) this.highRes = map.get("high_res_url").toString();
+        if (map.get("full_res_url") != null ) this.fullRes = map.get("full_res_url").toString();
+        if (map.get("author") != null ) this.author_id =  map.get("author").toString();
+        if (map.get("group") != null ) this.group_id =  map.get("group").toString();
 
         // try decoding category string if any exists
         if (map.get("category") !=null)
@@ -66,6 +68,7 @@ public class GalleryObject implements Serializable
 
         this.id = obj.id;
         this.author_id = obj.author_id;
+        this.group_id = obj.group_id;
         this.authorName = obj.authorName;
         this.imageTimestamp = obj.imageTimestamp;
         this.imageDescription = obj.imageDescription;
@@ -98,6 +101,14 @@ public class GalleryObject implements Serializable
 
     public void setXL(String xl) {
         this.fullRes = xl;
+    }
+
+    public String getGroup() {
+        return group_id;
+    }
+
+    public void setGroup(String group) {
+        this.group_id = group;
     }
 
     public String getId() {
