@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -68,6 +69,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
@@ -293,37 +295,20 @@ public class MainActivity extends AppCompatActivity
             return;
         } else
         {
-            // XXX passing Uri to intent commmented out for time being (SM)
-            // due to unknown crash
-            /*
             final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-            File xfile = getOutputMediaFile();
-            if (!xfile.exists()) {
-                try {
-                    xfile.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                xfile.delete();
-                try {
-                    xfile.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            fileUri = Uri.fromFile(xfile);
+            // XXX passing Uri to intent commmented out for time being (SM)
+            // due to unknown crash
+            // takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
 
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
             startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
-            */
 
-            // XXX using temporarily media selector for testing purposes (SM)
-            Intent intent = new Intent();
-            intent.setType("image/*");
-            intent.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(Intent.createChooser(intent, "Select an image"), MEDIA_REQUEST_CODE);
+
+            // XXX used for temporarily media selector for testing purposes (SM)
+            //Intent intent = new Intent();
+            //intent.setType("image/*");
+            //intent.setAction(Intent.ACTION_GET_CONTENT);
+            //startActivityForResult(Intent.createChooser(intent, "Select an image"), MEDIA_REQUEST_CODE);
         }
 
 
@@ -337,22 +322,6 @@ public class MainActivity extends AppCompatActivity
     private void makeRequest(String permission) {
         ActivityCompat.requestPermissions(this, new String[]{permission}, RECORD_REQUEST_CODE);
     }
-
-
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
-
-    public String getRealPathFromURI(Uri uri) {
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        cursor.moveToFirst();
-        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-        return cursor.getString(idx);
-    }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -368,12 +337,14 @@ public class MainActivity extends AppCompatActivity
             if (data != null )fileUri = data.getData();
             try {
                 if (fileUri != null) originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
-                else originalBitmap = (Bitmap) data.getExtras().get("data");
+                else {
+                    originalBitmap = (Bitmap) data.getExtras().get("data");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         // in case media gallery was used instead of camera, decode file path to bitmap
-        } else if(requestCode == MEDIA_REQUEST_CODE && resultCode==RESULT_OK) {
+        } else if(requestCode == MEDIA_REQUEST_CODE && resultCode == RESULT_OK) {
             try {
                 if (data != null )fileUri = data.getData();
                 originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
@@ -386,53 +357,19 @@ public class MainActivity extends AppCompatActivity
         if (originalBitmap != null) {
 
             /*
-            // do image resize if needed
+            // image resize done server side
             float aspectRatio = originalBitmap.getWidth() / (float) originalBitmap.getHeight();
             int width = 960;
             int height = Math.round(width / aspectRatio);
             originalBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
             */
 
-            /*
-            FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(fileUri.toString());
-                originalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }*/
-
             // detect number of barcodes in image
             int value = doBarcodeClasssification(originalBitmap);
 
-            if (value < 0) {
-                // classification failed
-                return;
-            } else if (value > 0)
-                {
-                // put it in private folder
-                AlbumObject ao;
-                ao = albumList.get(0);
-
-                GalleryObject obj = new GalleryObject();
-                obj.setCategory("Not Human");
-                obj.setAuthor(mUser.getDisplayName());
-                obj.setSmall(fileUri.toString());
-                obj.setLarge(fileUri.toString());
-                ao.add(obj);
-                adapter.notifyDataSetChanged();
-
-                // otherwise upload to server
-            } else uploadToServer(originalBitmap);
-
+            if (value < 0)  return; // classification failed
+            else if (value > 0)  savePrivateImage(originalBitmap); // save to private folder
+            else uploadToServer(originalBitmap); // publish to server
         }
 
     }
@@ -442,7 +379,6 @@ public class MainActivity extends AppCompatActivity
         bm.compress(Bitmap.CompressFormat.JPEG, 90, baos);
         byteUploadTarget = baos.toByteArray();
         //uploadTarget = Base64.encodeToString(byteUploadTarget, Base64.DEFAULT);
-        //Log.i("base64", "uploading data: " + uploadTarget);
 
         new asyncUpload().execute();
     }
@@ -454,8 +390,8 @@ public class MainActivity extends AppCompatActivity
         protected void onPreExecute() {
             super.onPreExecute();
             // XXX crashes on emulator, but not on device (SM)
-            busy.setMessage("Uploading to Server...");
-            busy.show();
+             busy.setMessage("Uploading to Server...");
+             busy.show();
         }
 
         @Override
@@ -481,11 +417,11 @@ public class MainActivity extends AppCompatActivity
 
                 HttpResponse response = httpclient.execute(httppost);
                 String s = EntityUtils.toString(response.getEntity());
-                Toast.makeText(MainActivity.this, "Server: " + s, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "Server: " + s, Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "Connection response: " + s);
 
             } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "Connection error: " + e.toString(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "Connection error: " + e.toString(), Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "Connection error: " + e.toString());
             }
             Log.i(TAG, "Upload done" );
@@ -497,24 +433,6 @@ public class MainActivity extends AppCompatActivity
             busy.hide();
             busy.dismiss();
         }
-    }
-
-
-
-    private File getOutputMediaFile(){
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "EventPictures");
-
-        if (!mediaStorageDir.exists()){
-            if (!mediaStorageDir.mkdirs()){
-                Log.d(this.TAG, "failed to create directory");
-                return null;
-            }
-        }
-
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        return new File(mediaStorageDir.getPath() + File.separator +
-                "IMG_"+ timeStamp + ".jpg");
     }
 
 
@@ -695,23 +613,93 @@ public class MainActivity extends AppCompatActivity
 
     public AlbumObject makePrivateAlbum() {
 
-        String[] samples = getResources().getStringArray(R.array.test_images);
-
         AlbumObject a = new AlbumObject("Private", false);
-
-        for (int i = 0; i < 8; i++) {
-            GalleryObject obj = new GalleryObject();
-            if (i % 2 == 0) obj.setCategory("Human");
-            else obj.setCategory("Not Human");
-            obj.setAuthor("Pätkä");
-            if (i % 3 == 0) obj.setAuthor("Pekka");
-            obj.setSmall(samples[i]);
-            obj.setLarge(samples[i]);
-            a.add(obj);
-        }
+        loadPrivateImages(a);
 
         return a;
     }
+
+    private void loadPrivateImages(AlbumObject to)
+    {
+        GalleryObject obj = null;
+        String path = Environment.getExternalStorageDirectory().toString()+ "/Android/data/"
+                + getApplicationContext().getPackageName()
+                + "/MyFiles";
+        Log.d("Files", "Path: " + path);
+        File directory = new File(path);
+        File[] files = directory.listFiles();
+        if(files  != null) {
+            Log.d("Files", "Size: " + files.length);
+            for (int i = 0; i < files.length; i++) {
+                obj = new GalleryObject();
+                obj.setCategory("Not Human");
+                obj.setAuthor(mUser.getDisplayName());
+                obj.setSmall(Uri.fromFile(files[i]).toString());
+                obj.setLarge(Uri.fromFile(files[i]).toString());
+                obj.setXL(Uri.fromFile(files[i]).toString());
+                to.add(obj);
+            }
+        }
+    }
+
+    public void savePrivateImage(Bitmap bmp)
+    {
+        fileUri = storeImage(bmp);
+
+        if (fileUri != null) {
+            GalleryObject obj = new GalleryObject();
+            obj.setCategory("Not Human");
+            obj.setAuthor(mUser.getDisplayName());
+            obj.setSmall(fileUri.toString());
+            obj.setLarge(fileUri.toString());
+            privateAlbum.add(obj);
+
+            adapter.notifyDataSetChanged();
+            Toast.makeText(MainActivity.this, "Image added to Private folder", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private Uri storeImage(Bitmap image) {
+        File pictureFile = getOutputMediaFile();
+        if (pictureFile == null) {
+            Log.d(TAG,
+                    "Error creating media file, check storage permissions: ");// e.getMessage());
+            return null;
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(pictureFile);
+            image.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+            fos.close();
+            return Uri.fromFile(pictureFile);
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private  File getOutputMediaFile(){
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                + "/Android/data/"
+                + getApplicationContext().getPackageName()
+                + "/MyFiles");
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                return null;
+            }
+        }
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
+        File mediaFile;
+        String mImageName="MI_"+ timeStamp +".jpg";
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+        return mediaFile;
+    }
+
+
 
     public void addGroupListener() {
         mDatabase.child(GROUPS_CHILD).addValueEventListener(new ValueEventListener() {
