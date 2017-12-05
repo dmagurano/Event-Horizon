@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
 
-        // something incomplete by Matias
+        // something incomplete(?) by Matias
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -239,8 +239,7 @@ public class MainActivity extends AppCompatActivity
 
                 Intent intent = new Intent(MainActivity.this, GalleryActivity.class);
 
-                if (intent != null && obj != null )
-                {
+                if (intent != null && obj != null) {
                     intent.putExtra("album", obj);
                     startActivity(intent);
                 }
@@ -291,18 +290,15 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void Snap(View v)
-    {
-        if(checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-        {
+    public void Snap(View v) {
+        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             makeRequest(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             return;
-        } else if(checkPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        } else if (checkPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 
             makeRequest(Manifest.permission.CAMERA);
             return;
-        } else
-        {
+        } else {
             final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
             // XXX passing Uri to intent commmented out for time being (SM)
@@ -332,8 +328,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bitmap originalBitmap = null;
         Uri uri = null;
 
@@ -342,19 +337,20 @@ public class MainActivity extends AppCompatActivity
 
             Log.i(TAG, "A photograph was selected");
 
-            if (data != null )fileUri = data.getData();
+            if (data != null) fileUri = data.getData();
             try {
-                if (fileUri != null) originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
+                if (fileUri != null)
+                    originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
                 else {
                     originalBitmap = (Bitmap) data.getExtras().get("data");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        // in case media gallery was used instead of camera, decode file path to bitmap
-        } else if(requestCode == MEDIA_REQUEST_CODE && resultCode == RESULT_OK) {
+            // in case media gallery was used instead of camera, decode file path to bitmap
+        } else if (requestCode == MEDIA_REQUEST_CODE && resultCode == RESULT_OK) {
             try {
-                if (data != null )fileUri = data.getData();
+                if (data != null) fileUri = data.getData();
                 originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
                 Log.i(TAG, "An image was selected from Media Gallery");
             } catch (Exception e) {
@@ -363,7 +359,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (originalBitmap != null) {
-
             /*
             // image resize done server side
             float aspectRatio = originalBitmap.getWidth() / (float) originalBitmap.getHeight();
@@ -375,8 +370,8 @@ public class MainActivity extends AppCompatActivity
             // detect number of barcodes in image
             int value = doBarcodeClasssification(originalBitmap);
 
-            if (value < 0)  return; // classification failed
-            else if (value > 0)  savePrivateImage(originalBitmap); // save to private folder
+            if (value < 0) return; // classification failed
+            else if (value > 0) savePrivateImage(originalBitmap); // save to private folder
             else uploadToServer(originalBitmap); // publish to server
         }
 
@@ -395,11 +390,12 @@ public class MainActivity extends AppCompatActivity
     public class asyncUpload extends AsyncTask<Void, Void, String> {
 
         private ProgressDialog busy = new ProgressDialog(MainActivity.this);
+
         protected void onPreExecute() {
             super.onPreExecute();
             // XXX crashes on emulator, but not on device (SM)
-             busy.setMessage("Uploading to Server...");
-             busy.show();
+            busy.setMessage("Uploading to Server...");
+            busy.show();
         }
 
         @Override
@@ -416,7 +412,7 @@ public class MainActivity extends AppCompatActivity
                 builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 
                 ContentBody cd = new ByteArrayBody(byteUploadTarget, "image/jpeg", "file.jpg");
-                builder.addPart("file",cd);
+                builder.addPart("file", cd);
 
                 String currentGroup = mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).toString();
                 builder.addPart("idToken", new StringBody(idToken, ContentType.TEXT_PLAIN));
@@ -432,7 +428,7 @@ public class MainActivity extends AppCompatActivity
                 //Toast.makeText(MainActivity.this, "Connection error: " + e.toString(), Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "Connection error: " + e.toString());
             }
-            Log.i(TAG, "Upload done" );
+            Log.i(TAG, "Upload done");
             return "Success";
         }
 
@@ -444,9 +440,8 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public int doBarcodeClasssification(Bitmap bitmap )
-    {
-        if (!barcodeDetector.isOperational() ) {
+    public int doBarcodeClasssification(Bitmap bitmap) {
+        if (!barcodeDetector.isOperational()) {
             /*
             new android.os.Handler().postDelayed(
                     new Runnable() {
@@ -466,7 +461,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-     // Converting dp to pixel
+    // Converting dp to pixel
     private int dpToPx(int dp) {
         Resources r = getResources();
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
@@ -577,7 +572,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_group) {
             Intent i = new Intent(MainActivity.this, GroupManagementActivity.class);
             FirebaseUser user = mAuth.getCurrentUser();
-            if(user != null){
+            if (user != null) {
                 String uid = mAuth.getCurrentUser().getUid();
                 String group_id = mDatabase.child(USERS_CHILD).child(uid).child(GROUP_CHILD).toString();
 
@@ -590,8 +585,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_settings) {
 
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            if (intent != null)
-            {
+            if (intent != null) {
                 startActivity(intent);
             }
 
@@ -627,39 +621,29 @@ public class MainActivity extends AppCompatActivity
         return a;
     }
 
-    private void loadPrivateImages(AlbumObject to)
-    {
+    private void loadPrivateImages(AlbumObject to) {
         GalleryObject obj = null;
-        String path = Environment.getExternalStorageDirectory().toString()+ "/Android/data/"
+        String path = Environment.getExternalStorageDirectory().toString() + "/Android/data/"
                 + getApplicationContext().getPackageName()
                 + "/MyFiles";
         Log.d("Files", "Path: " + path);
         File directory = new File(path);
         File[] files = directory.listFiles();
-        if(files  != null) {
+        if (files != null) {
             Log.d("Files", "Size: " + files.length);
             for (int i = 0; i < files.length; i++) {
-                obj = new GalleryObject();
-                obj.setCategory("Not Human");
-                obj.setAuthor(mUser.getDisplayName());
-                obj.setSmall(Uri.fromFile(files[i]).toString());
-                obj.setLarge(Uri.fromFile(files[i]).toString());
-                obj.setXL(Uri.fromFile(files[i]).toString());
+                obj = new GalleryObject(Uri.fromFile(files[i]), mUser.getDisplayName());
                 to.add(obj);
             }
         }
     }
 
-    public void savePrivateImage(Bitmap bmp)
-    {
+
+    public void savePrivateImage(Bitmap bmp) {
         fileUri = storeImage(bmp);
 
         if (fileUri != null) {
-            GalleryObject obj = new GalleryObject();
-            obj.setCategory("Not Human");
-            obj.setAuthor(mUser.getDisplayName());
-            obj.setSmall(fileUri.toString());
-            obj.setLarge(fileUri.toString());
+            GalleryObject obj = new GalleryObject(fileUri, mUser.getDisplayName());
             privateAlbum.add(obj);
 
             adapter.notifyDataSetChanged();
@@ -670,8 +654,6 @@ public class MainActivity extends AppCompatActivity
     private Uri storeImage(Bitmap image) {
         File pictureFile = getOutputMediaFile();
         if (pictureFile == null) {
-            Log.d(TAG,
-                    "Error creating media file, check storage permissions: ");// e.getMessage());
             return null;
         }
         try {
@@ -687,26 +669,25 @@ public class MainActivity extends AppCompatActivity
         return null;
     }
 
-    private  File getOutputMediaFile(){
+    private File getOutputMediaFile() {
         File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
                 + "/Android/data/"
                 + getApplicationContext().getPackageName()
                 + "/MyFiles");
 
         // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
                 return null;
             }
         }
         // Create a media file name
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
         File mediaFile;
-        String mImageName="MI_"+ timeStamp +".jpg";
+        String mImageName = "MI_" + timeStamp + ".jpg";
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
         return mediaFile;
     }
-
 
 
     public void addGroupListener() {
@@ -714,15 +695,13 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                Log.e("Count " ,""+snapshot.getChildrenCount());
+                Log.e("Count ", "" + snapshot.getChildrenCount());
                 albumList.clear();
                 albumList.add(privateAlbum);
 
-                for (DataSnapshot postSnapshot: snapshot.getChildren())
-                {
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
                     HashMap<String, Object> map = new HashMap<>();
-                    for (DataSnapshot dataSnapshot: postSnapshot.getChildren())
-                    {
+                    for (DataSnapshot dataSnapshot : postSnapshot.getChildren()) {
                         map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
                     }
 
@@ -731,6 +710,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 adapter.notifyDataSetChanged();
             }
+
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
@@ -739,37 +719,37 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    public void addImageListener()
-    {
-        mDatabase.child(IMAGES_CHILD).addValueEventListener(new ValueEventListener()
-           {
-               @Override
-               public void onDataChange(DataSnapshot snapshot) {
-                   Log.e("Group Count ", "" + snapshot.getChildrenCount());
+    public void addImageListener() {
+        mDatabase.child(IMAGES_CHILD).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.e("Group Count ", "" + snapshot.getChildrenCount());
 
-                   for (DataSnapshot keySnapshot : snapshot.getChildren()) {
-                       for (DataSnapshot imageSnapshot : keySnapshot.getChildren()) {
-                           HashMap<String, Object> map = new HashMap<>();
-                           for (DataSnapshot dataSnapshot : imageSnapshot.getChildren()) {
-                               map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
-                           }
-                           GalleryObject obj = new GalleryObject(imageSnapshot.getKey(), map);
-                           obj.setAuthor("unknown user"); // XXX resolve user
-                           for (int i = 0; i < albumList.size(); i++) {
-                               if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(keySnapshot.getKey())) {
-                                   albumList.get(i).add(obj);
-                               }
-                           }
-                       }
-                   }
-                   adapter.notifyDataSetChanged();
-               }
-               @Override
-               public void onCancelled(DatabaseError error) {
-                   Log.w(TAG, "Failed to read value.", error.toException());
-               }
-           });
+                for (DataSnapshot keySnapshot : snapshot.getChildren()) {
+                    for (DataSnapshot imageSnapshot : keySnapshot.getChildren()) {
+                        HashMap<String, Object> map = new HashMap<>();
+                        for (DataSnapshot dataSnapshot : imageSnapshot.getChildren()) {
+                            map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
+                        }
+                        GalleryObject obj = new GalleryObject(imageSnapshot.getKey(), map);
+                        obj.setAuthor("unknown user"); // XXX resolve user
+                        for (int i = 0; i < albumList.size(); i++) {
+                            if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(keySnapshot.getKey())) {
+                                albumList.get(i).add(obj);
+                            }
+                        }
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
     }
+}
 
 
 

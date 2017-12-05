@@ -1,5 +1,7 @@
 package fi.aalto.mcc.mcc.model;
 
+import android.net.Uri;
+
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -36,6 +38,20 @@ public class GalleryObject implements Serializable
     public GalleryObject(int type, String header) {
         this.type = type;
         this.header = header;
+    }
+
+    public GalleryObject(Uri fileUri, String author)
+    {
+        this.type = VIEW_NORMAL;
+
+        if(author == null || author.equals("")) this.authorName = "Unresolved author name";
+        else this.authorName = author;
+
+        this.category = "Not Human";
+        this.setSmall(fileUri.toString());
+        this.setLarge(fileUri.toString());
+        this.setXL(fileUri.toString());
+
     }
 
     public GalleryObject(String id, HashMap<String, Object> map) {
