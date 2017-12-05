@@ -54,7 +54,7 @@ public class GalleryObject implements Serializable
             this.category = map.get("category").toString();
         }
         // else revert to old format
-        else if ( map.get("has_people").toString() == "false")
+        else if ( map.get("has_people")!= null && map.get("has_people").toString() == "false")
              this.category = "Not Human";
         else this.category = "Human";
 

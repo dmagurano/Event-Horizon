@@ -1,7 +1,9 @@
 package fi.aalto.mcc.mcc.fragment;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -16,6 +18,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.ArrayList;
 
 import fi.aalto.mcc.mcc.R;
+import fi.aalto.mcc.mcc.activity.SettingsActivity;
+import fi.aalto.mcc.mcc.helper.Connectivity;
 import fi.aalto.mcc.mcc.helper.TouchImageView;
 import fi.aalto.mcc.mcc.model.GalleryObject;
 
@@ -32,6 +36,9 @@ public class GalleryObjectDetails extends DialogFragment {
     private CustomViewPagerAdapter viewPagerAdapter;
     private TextView labelCount;
     private int selectedPosition = 0;
+    private Connectivity cm;
+    int syncLAN = 1;
+    int syncWAN = 1;
 
     public static GalleryObjectDetails newInstance() {
         GalleryObjectDetails instance = new GalleryObjectDetails();
@@ -52,7 +59,14 @@ public class GalleryObjectDetails extends DialogFragment {
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.addOnPageChangeListener(viewPagerPageChangeListener);
 
+
+        cm = new Connectivity();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        int syncLAN = Integer.parseInt(sharedPref.getString("sync_quality_lan","1"));
+        int syncWAN = Integer.parseInt(sharedPref.getString("sync_quality_wan","1"));
+
         setCurrentItem(selectedPosition);
+
 
         return v;
     }
@@ -112,7 +126,23 @@ public class GalleryObjectDetails extends DialogFragment {
             TouchImageView imageViewPreview = (TouchImageView) _view.findViewById(R.id.image_preview);
             imageViewPreview.setImageResource(R.drawable.ic_menu_gallery);
 
-            Glide.with(getActivity()).load(listObjects.get(position).getLarge())
+            // XXX might move the bandwidth detection code inside helper later (SM)
+            String imagePath = "";
+            boolean hasWifi = cm.isConnectedWifi(getContext());
+
+            // in LAN or Wifi
+            if (hasWifi && syncLAN == 0)   imagePath = listObjects.get(position).getSmall();
+            else if ( hasWifi && syncLAN == 1)   imagePath = listObjects.get(position).getLarge();
+            else if ( hasWifi && syncLAN == 2)   imagePath = listObjects.get(position).getXL();
+            else
+            {
+                // in WAN
+                if(syncWAN == 0) imagePath = listObjects.get(position).getSmall();
+                else if (syncWAN == 1) imagePath = listObjects.get(position).getLarge();
+                else imagePath = listObjects.get(position).getXL();
+            }
+
+            Glide.with(getActivity()).load(imagePath)
                     .thumbnail(0.5f)
                     .placeholder(R.drawable.ic_menu_gallery)
                     .crossFade()
