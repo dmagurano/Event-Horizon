@@ -48,9 +48,11 @@ public class GalleryObject implements Serializable
         else this.authorName = author;
 
         this.category = "Not Human";
-        this.setSmall(fileUri.toString());
-        this.setLarge(fileUri.toString());
-        this.setXL(fileUri.toString());
+        if (fileUri != null) {
+            this.setSmall(fileUri.toString());
+            this.setLarge(fileUri.toString());
+            this.setXL(fileUri.toString());
+        }
 
     }
 
@@ -58,11 +60,11 @@ public class GalleryObject implements Serializable
         type = VIEW_NORMAL;
         this.id = id;
 
-        if (map.get("low_res_url") != null ) this.lowRes = map.get("low_res_url").toString();
-        if (map.get("high_res_url") != null ) this.highRes = map.get("high_res_url").toString();
-        if (map.get("full_res_url") != null ) this.fullRes = map.get("full_res_url").toString();
-        if (map.get("author") != null ) this.author_id =  map.get("author").toString();
-        if (map.get("group") != null ) this.group_id =  map.get("group").toString();
+        if (map.get("low_res_url") != null )    this.lowRes = map.get("low_res_url").toString();
+        if (map.get("high_res_url") != null )   this.highRes = map.get("high_res_url").toString();
+        if (map.get("full_res_url") != null )   this.fullRes = map.get("full_res_url").toString();
+        if (map.get("author") != null )         this.author_id =  map.get("author").toString();
+        if (map.get("group") != null )          this.group_id =  map.get("group").toString();
 
         // try decoding category string if any exists
         if (map.get("category") !=null)
@@ -96,6 +98,10 @@ public class GalleryObject implements Serializable
 
 
     public String getSmall() {
+        if(lowRes != null)   return lowRes;
+        if(highRes != null)  return highRes;
+        if(fullRes != null)  return fullRes;
+
         return lowRes;
     }
 
@@ -104,6 +110,10 @@ public class GalleryObject implements Serializable
     }
 
     public String getLarge() {
+        if(highRes != null)  return highRes;
+        if(lowRes != null)   return lowRes;
+        if(fullRes != null)  return fullRes;
+
         return highRes;
     }
 
@@ -112,6 +122,10 @@ public class GalleryObject implements Serializable
     }
 
     public String getXL() {
+        if(fullRes != null)  return fullRes;
+        if(highRes != null)  return highRes;
+        if(lowRes != null)   return lowRes;
+
         return fullRes;
     }
 
