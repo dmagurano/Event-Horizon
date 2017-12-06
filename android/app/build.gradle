@@ -5,6 +5,7 @@ android {
     defaultConfig {
         applicationId "fi.aalto.mcc.mcc"
         minSdkVersion 19
+        multiDexEnabled true
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"

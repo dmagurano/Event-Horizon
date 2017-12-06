@@ -3,13 +3,32 @@ const express = require('express')
 const app = express();
 const Multer = require('multer');
 const format = require('util').format;
-//const router = express.Router();
+const router = express.Router();
 
 process.title = "mcc";
+process.env.GOOGLE_APPLICATION_CREDENTIALS = "./mcc-fall-2017-g04-35ff1cc15d6d.json"
+process.env.GCLOUD_PROJECT = "mcc-fall-2017-g04"
+
+/* Image processing */
+const sharp = require('sharp')
+var vision = require('@google-cloud/vision');
+// Instantiate a vision client
+// Creates a client
+var client = new vision.ImageAnnotatorClient();
+
+/* Gcloud Storage */
 
 const googleStorage = require('@google-cloud/storage');
 var admin = require("firebase-admin");
 var crypto = require('crypto');
+
+const storage = googleStorage();
+//   projectId: "mcc-fall-2017-g04",
+//   keyFilename: "./mcc-fall-2017-g04-35ff1cc15d6d.json"
+// });
+
+// Google Cloud Storage Bucket
+const bucket = storage.bucket("mcc-fall-2017-g04.appspot.com");
 
 /* FIREBASE REALTIME DB CONFIG */
 
@@ -20,12 +39,8 @@ admin.initializeApp({
 	databaseURL: "https://mcc-fall-2017-g04.firebaseio.com/"
 });
 
-// As an admin, the app has access to read and write all data, regardless of Security Rules
 var db = admin.database();
 var ref = db.ref("/");
-ref.once("value", function(snapshot) {
-  //console.log(snapshot.val());
-});
 
 /* IMAGE UPLOAD CONFIG */
 
@@ -38,22 +53,14 @@ const multer = Multer({
   }
 });
 
-const storage = googleStorage({
-  projectId: "mcc-fall-2017-g04",
-  keyFilename: "./mcc-fall-2017-g04-35ff1cc15d6d.json"
-});
-
-// Google Cloud Storage Bucket
-const bucket = storage.bucket("mcc-fall-2017-g04.appspot.com");
-
 app.use(bodyParser.json());
 
 app.post('/create', (req, res) => {
   if(req.body.idToken != undefined && req.body.groupName != undefined && req.body.expiration !=undefined){
-    // admin.auth().verifyIdToken(req.body.idToken)
-    // .then(function(decodedToken) {
-      // var uid = decodedToken.uid;
-      var uid = "dshajhdsuia";
+    admin.auth().verifyIdToken(req.body.idToken)
+    .then(function(decodedToken) {
+      var uid = decodedToken.uid;
+      //var uid = "ERUG65W6rHdWlwk5gTEABlU70vv2";
       // console.log("Token OK. UID: " + uid)
       var timestamp = new Date(req.body.expiration).getTime()
       //console.log(timestamp)
@@ -68,11 +75,8 @@ app.post('/create', (req, res) => {
         single_use_token: null,
         members: {
           [uid]: true
-      },
-      images: {
-          "image1_ID": true
-      }
-  });
+        }
+      });
       // Get unique id of the new group
       var newGroupId = newGroupRef.key;
       // generate one time token
@@ -80,17 +84,17 @@ app.post('/create', (req, res) => {
       //update value on db
       newGroupRef.update({
         single_use_token: token
-    })
+      })
       // send response to user
       res.json({
         groupId: newGroupId,
         oneTimeToken: token
-    })
-  // }).catch(function(error) {
-  //     res.send(error.message)
-  // });
+      })
+  }).catch(function(error) {
+      res.send(error.message)
+    });
 } else {
-    res.send(req.body)
+    res.send("Missing Parameters")
 }
 
 
@@ -98,9 +102,9 @@ app.post('/create', (req, res) => {
 
 app.post('/join', (req, res) => {
   if(req.body.idToken != undefined && req.body.groupId != undefined &&  req.body.groupToken != undefined){
-    // admin.auth().verifyIdToken(req.body.idToken)
-    // .then(function(decodedToken) {
-      // var uid = decodedToken.uid;
+    admin.auth().verifyIdToken(req.body.idToken)
+    .then(function(decodedToken) {
+      var uid = decodedToken.uid;
       // console.log("Token OK. UID: " + uid)
       //Reference to the group
       var groupRef = ref.child("Groups/" + req.body.groupId);
@@ -120,113 +124,157 @@ app.post('/join', (req, res) => {
             console.log("The read failed: " + errorObject.code);
             res.status(500).send("Error");
       }) 
-    
-        
-  // }).catch(function(error) {
-  //     res.send(error.message)
-  // });
-    } else {
-        res.send(req.body)
-    }
-    });
+    }).catch(function(error) {
+        res.send(error.message)
+      });
+  } else {
+      res.send("Missing Parameters")
+  }
+});
 
 app.post('/leave', (req, res) => {
   if(req.body.idToken != undefined && req.body.groupId != undefined){
-    // admin.auth().verifyIdToken(req.body.idToken)
-    // .then(function(decodedToken) {
-      // var uid = decodedToken.uid;
+    admin.auth().verifyIdToken(req.body.idToken)
+    .then(function(decodedToken) {
+      var uid = decodedToken.uid;
       // console.log("Token OK. UID: " + uid)
       //Reference to the group
-        var groupRef = ref.child("Groups/" + req.body.groupId);
-        uid = "fjdskljflskj"
-        // retrieve initial data
-        groupRef.once("value")
-        .then(function(data) {
-            var groupAdmin = data.val().admin;
-            if(groupAdmin === uid){
-                groupRef.update({
-                    expiration_date: new Date().getTime()
-                })
-                res.send("Group Deleted")
-            } else {
-                var memberRef = groupRef.child("members/"+uid);
-                memberRef.once("value")
-                .then(function (member){
-                    //checking if user is member of the group
-                    if(member.val() != null){
-                        memberRef.remove()
-                        .then(function(){
-                            res.send("User "+uid+" remove succeded")
-                        })
-                        .catch(function(error) {
-                            res.status(500).send("Remove failed: " + error.message)
-                        });
-                    } else {
-                        //user not member
-                        res.status(400).send("The user is not member of the group")
-                    }
-                });
-            }
+      var groupRef = ref.child("Groups/" + req.body.groupId);
+      //uid = "fjdskljflskj"
+      // retrieve initial data
+      groupRef.once("value")
+      .then(function(data) {
+        var groupAdmin = data.val().admin;
+        if(groupAdmin === uid){
+            groupRef.update({
+                expiration_date: new Date().getTime()
+            })
+            res.send("Group Deleted")
+        } else {
+            var memberRef = groupRef.child("members/"+uid);
+            memberRef.once("value")
+            .then(function (member){
+                //checking if user is member of the group
+                if(member.val() != null){
+                    memberRef.remove()
+                    .then(function(){
+                        res.send("User "+uid+" remove succeded")
+                    })
+                    .catch(function(error) {
+                        res.status(500).send("Remove failed: " + error.message)
+                    });
+                } else {
+                    //user not member
+                    res.status(400).send("The user is not member of the group")
+                }
+            });
+          }
         }).catch(function (errorObject) {
             console.log("The read failed: " + errorObject.code);
             res.status(500).send("Error")
         })
-
-
-  // }).catch(function(error) {
-  //     res.send(error.message)
-  // });
-} else {
-    res.send(req.body)
-}
+    }).catch(function(error) {
+        res.send(error.message)
+      });
+  } else {
+    res.send("Missing Parameters")
+  }
 });
 
 /* IMAGE UPLOAD */ 
+
+//TODO: check if the user belongs to the group
 
 /**
  * Adding new file to the storage
  */
 app.post('/upload', multer.single('file'), (req, res) => {
-        console.log('Upload Image');
-        if(req.body.idToken != undefined && req.body.groupId != undefined){
-        // admin.auth().verifyIdToken(req.body.idToken)
-        // .then(function(decodedToken) {
-
-            let file = req.file;
-            if (file) {
-            uploadImageToStorage(file, req.body.groupId).then((success) => {
-              res.status(200).send({
-                status: 'success'
-              });
-            }).catch((error) => {
-              console.error(error);
-              res.status(500).send("Failure in uploading the image")
-            });
-            } else {
-            res.status(400).send("No image was uploaded")
-            }
-        // }).catch(function(error) {
-        //     res.send(error.message)
-        // });
-        } else {
-            res.send(req.body)
-        }
+  //console.log('Upload Image');
+  if(req.body.idToken != undefined && req.body.groupId != undefined){
+    admin.auth().verifyIdToken(req.body.idToken)
+    .then(function(decodedToken) {
+      var uid = decodedToken.uid;
+      let file = req.file;
+      if (file) {
+        processAndUploadImage(file, req.body.groupId, uid).then((success) => {
+          res.status(200).send({
+            status: 'success'
+          });
+        }).catch((error) => {
+            console.error(error);
+            res.status(500).send(error)
+        });
+      } else {
+        res.status(400).send("No image was uploaded")
+      }
+    }).catch(function(error) {
+        res.send(error.message)
+    });
+  } else {
+      res.send("Missing Parameters")
+  }
 });
 
-/**
- * Upload the image file to Google Storage
- * @param {File} file object that will be uploaded to Google Storage
- */
-const uploadImageToStorage = (file, groupId) => {
+
+const processAndUploadImage = (file, groupId, uid) => {
   let prom = new Promise((resolve, reject) => {
     if (!file) {
-      reject('No image file');
+      return reject('No image file');
     }
 
     if (file.mimetype != "image/jpeg") {
-        reject("Only JPG images allowed")
+      return reject("Only JPG images allowed")
     }
-    let newFileName = `/${groupId}/fullres/${file.originalname}_${Date.now()}`;
+    var fullres_url = null,
+     highres_url = null,
+     lowres_url = null;
+
+    uploadToStorage(file, groupId, "fullres")
+    .then((url) => {
+      fullres_url = url;
+      return sharp(file.buffer).resize(1280).toBuffer()
+    })
+    .then((data) => {
+      file.buffer = data
+      return uploadToStorage(file, groupId, "highres")
+    })
+    .then((url) => {
+      highres_url = url;
+      return sharp(file.buffer).resize(640).toBuffer()
+    })
+    .then((data) => {
+      file.buffer = data
+      return uploadToStorage(file, groupId, "lowres")
+    })
+    .then((url) => {
+      lowres_url = url;
+      return detectFaces(file)
+    })
+    .then((faces) => {
+      var people = false;
+      if(faces > 0)
+        people = true;
+      var imgsRef = ref.child("Images/"+groupId);
+      var newImgRef = imgsRef.push();
+      newImgRef.set({
+        author: uid,
+        has_people: people,
+        full_res_url: fullres_url,
+        high_res_url: highres_url,
+        low_res_url: lowres_url
+      });
+      resolve()
+    })
+    .catch((error) => {
+      return reject(error)
+    })
+  });
+  return prom;
+}
+
+const uploadToStorage = (file, groupId, resolution) => {
+  let prom = new Promise((resolve, reject) => {
+    let newFileName = `/${groupId}/${resolution}/${file.originalname}_${Date.now()}`;
 
     let fileUpload = bucket.file(newFileName);
 
@@ -237,19 +285,43 @@ const uploadImageToStorage = (file, groupId) => {
     });
 
     blobStream.on('error', (error) => {
+
       reject('Something is wrong! Unable to upload at the moment.');
     });
 
     blobStream.on('finish', () => {
       // The public URL can be used to directly access the file via HTTP.
-      const url = format(`https://storage.googleapis.com/${bucket.name}/${groupId}/fullres/${fileUpload.name}`);
-      resolve(url);
+      const url = format(`https://storage.googleapis.com/${bucket.name}/${groupId}/${resolution}/${fileUpload.name}`);
       console.log(url);
+      
+      resolve(url);
     });
-
     blobStream.end(file.buffer);
   });
-  return prom;
+ return prom
+}
+
+/**
+ * Uses the Vision API to detect faces in the given file.
+ */
+function detectFaces(file) {
+  let prom = new Promise((resolve, reject) => {
+    // Make a call to the Vision API to detect the faces
+    //const request = {image: {source: {filename: inputFile}}};
+    client
+      .faceDetection(file.buffer)
+      .then(results => {
+        const faces = results[0].faceAnnotations;
+        var numFaces = faces.length;
+        console.log('Found ' + numFaces + (numFaces === 1 ? ' face' : ' faces'));
+        resolve(numFaces);
+      })
+      .catch(err => {
+        console.error('ERROR:', err);
+        reject(err);
+      });
+  });
+  return prom
 }
 
 // Start the server
