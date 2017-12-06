@@ -118,8 +118,9 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     public static final int CAMERA_REQUEST_CODE = 1;
-    public static final int MEDIA_REQUEST_CODE = 2;
+    public static final int MEDIA_REQUEST_CODE  = 2;
     public static final int RECORD_REQUEST_CODE = 3;
+
     private String TAG = "Main";
     public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
 
@@ -141,6 +142,7 @@ public class MainActivity extends AppCompatActivity
     String uploadTarget;
     byte[] byteUploadTarget;
     String idToken;
+    String myGroup;
 
     private RecyclerView recyclerView;
     private AlbumViewAdapter adapter;
@@ -271,6 +273,9 @@ public class MainActivity extends AppCompatActivity
         // load images from private folder
         privateAlbum = makePrivateAlbum();
 
+        addUserGroupValueListener();
+
+        /*
         // add firebase listeners
         addGroupListener();
 
@@ -281,6 +286,8 @@ public class MainActivity extends AppCompatActivity
                         addImageListener();
                     }
                 }, 5000);
+
+                */
 
 
     }
@@ -411,9 +418,8 @@ public class MainActivity extends AppCompatActivity
                 ContentBody cd = new ByteArrayBody(byteUploadTarget, "image/jpeg", "file.jpg");
                 builder.addPart("file", cd);
 
-                String currentGroup = mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).toString();
                 builder.addPart("idToken", new StringBody(idToken, ContentType.TEXT_PLAIN));
-                builder.addPart("groupId", new StringBody(currentGroup, ContentType.TEXT_PLAIN));
+                builder.addPart("groupId", new StringBody(myGroup, ContentType.TEXT_PLAIN));
                 httppost.setEntity(builder.build());
 
                 HttpResponse response = httpclient.execute(httppost);
@@ -623,11 +629,9 @@ public class MainActivity extends AppCompatActivity
         String path = Environment.getExternalStorageDirectory().toString() + "/Android/data/"
                 + getApplicationContext().getPackageName()
                 + "/MyFiles";
-        Log.d("Files", "Path: " + path);
         File directory = new File(path);
         File[] files = directory.listFiles();
         if (files != null) {
-            Log.d("Files", "Size: " + files.length);
             for (int i = 0; i < files.length; i++) {
                 obj = new GalleryObject(Uri.fromFile(files[i]), mUser.getDisplayName());
                 to.add(obj);
@@ -687,25 +691,16 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void addGroupListener() {
-        mDatabase.child(GROUPS_CHILD).addValueEventListener(new ValueEventListener() {
 
+
+    public void addUserGroupValueListener() {
+        mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                Log.e("Count ", "" + snapshot.getChildrenCount());
-                albumList.clear();
-                albumList.add(privateAlbum);
-
-                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
-                    HashMap<String, Object> map = new HashMap<>();
-                    for (DataSnapshot dataSnapshot : postSnapshot.getChildren()) {
-                        map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
-                    }
-
-                    AlbumObject obj = new AlbumObject(postSnapshot.getKey(), map);
-                    albumList.add(obj);
+                if( snapshot.getValue() != null) {
+                    myGroup = snapshot.getValue().toString();
+                    addGroupListener(myGroup);
                 }
-                adapter.notifyDataSetChanged();
             }
 
             @Override
@@ -716,12 +711,76 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    public void addImageListener() {
+    public void addGroupListener(String myGroupValue) {
+        mDatabase.child(GROUPS_CHILD).child(myGroupValue).addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                albumList.clear();
+                albumList.add(privateAlbum);
+                HashMap<String, Object> map = new HashMap<>();
+
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                        map.put(snap.getKey(), snap.getValue());
+                    }
+                AlbumObject obj = new AlbumObject(snapshot.getKey(), map);
+                albumList.add(obj);
+                adapter.notifyDataSetChanged();
+                addImageListener(myGroup);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    public void addImageListener(String myGroupValue) {
+
+        if(myGroupValue != null && !myGroupValue.equals("")) {
+            mDatabase.child(IMAGES_CHILD).child(myGroupValue).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+
+                    for (DataSnapshot data : snapshot.getChildren())
+                    {
+
+                        HashMap<String, Object> map = new HashMap<>();
+                        for (DataSnapshot snap : data.getChildren()) {
+                            map.put(snap.getKey(), snap.getValue());
+                            String key = snap.getKey();
+                            String value = snap.getValue().toString();
+                            if ( key == value ) ;
+                        }
+                        String snapKey = snapshot.getKey();
+                        GalleryObject obj = new GalleryObject(snapshot.getKey(), map);
+                        obj.setAuthor("unknown user"); // XXX resolve user
+
+                        for (int i = 0; i < albumList.size(); i++) {
+                            if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(snapshot.getKey())) {
+                                albumList.get(i).add(obj);
+                            }
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError error) {
+                    Log.w(TAG, "Failed to read value.", error.toException());
+                }
+            });
+        }
+    }
+
+
+    // XXX multigrouping removed from use due popular demand (SM)
+    public void addMultiGroupImageListener() {
         mDatabase.child(IMAGES_CHILD).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                Log.e("Group Count ", "" + snapshot.getChildrenCount());
-
                 for (DataSnapshot keySnapshot : snapshot.getChildren()) {
                     for (DataSnapshot imageSnapshot : keySnapshot.getChildren()) {
                         HashMap<String, Object> map = new HashMap<>();
@@ -742,6 +801,36 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onCancelled(DatabaseError error) {
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+
+    // XXX multigrouping removed from use due popular demand (SM)
+    public void addMultiGroupListener() {
+        mDatabase.child(GROUPS_CHILD).addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                albumList.clear();
+                albumList.add(privateAlbum);
+
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                    HashMap<String, Object> map = new HashMap<>();
+                    for (DataSnapshot dataSnapshot : postSnapshot.getChildren()) {
+                        map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
+                    }
+
+                    AlbumObject obj = new AlbumObject(postSnapshot.getKey(), map);
+                    albumList.add(obj);
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
