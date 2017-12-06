@@ -238,6 +238,8 @@ public class AlbumObject implements Serializable {
     {
         ArrayList<GalleryObject> result = new ArrayList<GalleryObject>();
 
+        if (author == null) return null;
+
         for (GalleryObject obj : listObjects) {
             if(author.equals(obj.getAuthor()))
                 result.add(obj);

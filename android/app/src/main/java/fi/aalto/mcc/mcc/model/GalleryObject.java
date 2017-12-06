@@ -38,6 +38,7 @@ public class GalleryObject implements Serializable
     public GalleryObject(int type, String header) {
         this.type = type;
         this.header = header;
+        this.authorName = "Unresolved author name";
     }
 
     public GalleryObject(Uri fileUri, String author)
@@ -60,11 +61,17 @@ public class GalleryObject implements Serializable
         type = VIEW_NORMAL;
         this.id = id;
 
-        if (map.get("low_res_url") != null )    this.lowRes = map.get("low_res_url").toString();
-        if (map.get("high_res_url") != null )   this.highRes = map.get("high_res_url").toString();
-        if (map.get("full_res_url") != null )   this.fullRes = map.get("full_res_url").toString();
-        if (map.get("author") != null )         this.author_id =  map.get("author").toString();
-        if (map.get("group") != null )          this.group_id =  map.get("group").toString();
+        if (map.get("low_res_url") != null )    this.lowRes     = map.get("low_res_url").toString();
+        if (map.get("high_res_url") != null )   this.highRes    = map.get("high_res_url").toString();
+        if (map.get("full_res_url") != null )   this.fullRes    = map.get("full_res_url").toString();
+        if (map.get("author") != null )         this.author_id  = map.get("author").toString();
+        if (map.get("group") != null )          this.group_id   = map.get("group").toString();
+
+        if (map.get("author_name") != null )
+            this.authorName = map.get("author_name").toString();
+        else
+            this.authorName = "Unresolved author name";
+
 
         // try decoding category string if any exists
         if (map.get("category") !=null)

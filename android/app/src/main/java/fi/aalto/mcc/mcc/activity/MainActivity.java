@@ -126,6 +126,7 @@ public class MainActivity extends AppCompatActivity
 
     public static final String IMAGES_CHILD = "Images";
     public static final String GROUP_CHILD  = "group";
+    public static final String NAME_CHILD   = "name";
     public static final String GROUPS_CHILD = "Groups";
     public static final String USERS_CHILD  = "Users";
 
@@ -143,6 +144,7 @@ public class MainActivity extends AppCompatActivity
     byte[] byteUploadTarget;
     String idToken;
     String myGroup;
+    String myName;
 
     private RecyclerView recyclerView;
     private AlbumViewAdapter adapter;
@@ -270,25 +272,12 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // load images from private folder
-        privateAlbum = makePrivateAlbum();
 
+        // initialize user name and load images from private folder
+        addUserNameValueListener();
+
+        // initialize primary data listeners in order
         addUserGroupValueListener();
-
-        /*
-        // add firebase listeners
-        addGroupListener();
-
-        // XXX need to force enumeration order, this is quickfix for testing purposes (SM)
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        addImageListener();
-                    }
-                }, 5000);
-
-                */
-
 
     }
 
@@ -370,6 +359,8 @@ public class MainActivity extends AppCompatActivity
             int height = Math.round(width / aspectRatio);
             originalBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
             */
+            int w = originalBitmap.getWidth();
+            int h = originalBitmap.getHeight();
 
             // detect number of barcodes in image
             int value = doBarcodeClasssification(originalBitmap);
@@ -420,6 +411,7 @@ public class MainActivity extends AppCompatActivity
 
                 builder.addPart("idToken", new StringBody(idToken, ContentType.TEXT_PLAIN));
                 builder.addPart("groupId", new StringBody(myGroup, ContentType.TEXT_PLAIN));
+                builder.addPart("author_name", new StringBody(myName, ContentType.TEXT_PLAIN));
                 httppost.setEntity(builder.build());
 
                 HttpResponse response = httpclient.execute(httppost);
@@ -633,7 +625,7 @@ public class MainActivity extends AppCompatActivity
         File[] files = directory.listFiles();
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
-                obj = new GalleryObject(Uri.fromFile(files[i]), mUser.getDisplayName());
+                obj = new GalleryObject(Uri.fromFile(files[i]), myName);
                 to.add(obj);
             }
         }
@@ -644,7 +636,7 @@ public class MainActivity extends AppCompatActivity
         fileUri = storeImage(bmp);
 
         if (fileUri != null) {
-            GalleryObject obj = new GalleryObject(fileUri, mUser.getDisplayName());
+            GalleryObject obj = new GalleryObject(fileUri, myName);
             privateAlbum.add(obj);
 
             adapter.notifyDataSetChanged();
@@ -691,6 +683,24 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+
+    public void addUserNameValueListener() {
+        mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(NAME_CHILD).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if( snapshot.getValue() != null) {
+                    myName = snapshot.getValue().toString();
+                }
+                privateAlbum = makePrivateAlbum();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
 
 
     public void addUserGroupValueListener() {
@@ -755,7 +765,6 @@ public class MainActivity extends AppCompatActivity
                         }
                         String snapKey = snapshot.getKey();
                         GalleryObject obj = new GalleryObject(data.getKey(), map);
-                        obj.setAuthor("unknown user"); // XXX resolve user
 
                         for (int i = 0; i < albumList.size(); i++) {
                             if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(myGroup)) {
@@ -774,6 +783,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /* ======================================================== NOT IN USE ======================================================== */
 
     // XXX multigrouping removed from use due popular demand (SM)
     public void addMultiGroupImageListener() {
@@ -787,7 +797,7 @@ public class MainActivity extends AppCompatActivity
                             map.put(dataSnapshot.getKey(), dataSnapshot.getValue());
                         }
                         GalleryObject obj = new GalleryObject(imageSnapshot.getKey(), map);
-                        obj.setAuthor("unknown user"); // XXX resolve user
+
                         for (int i = 0; i < albumList.size(); i++) {
                             if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(keySnapshot.getKey())) {
                                 albumList.get(i).add(obj);

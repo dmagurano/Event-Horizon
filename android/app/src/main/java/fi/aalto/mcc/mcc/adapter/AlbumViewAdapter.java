@@ -77,10 +77,10 @@ public class AlbumViewAdapter extends RecyclerView.Adapter<AlbumViewAdapter.Cust
             if (!album.isPublic())
                 holder.indicator.setImageResource(R.drawable.ic_not_shared);
 
-            if (thumbnail.isEmpty()) {
-                Glide.with(c).load(R.drawable.no_image_thumb).into(holder.thumbnail);
-            }  else {
-                Glide.with(c).load(thumbnail).into(holder.thumbnail);
+            if (thumbnail != null)
+            {
+                if ( thumbnail.isEmpty()) Glide.with(c).load(R.drawable.no_image_thumb).into(holder.thumbnail);
+                else Glide.with(c).load(thumbnail).into(holder.thumbnail);
             }
         }
     }
