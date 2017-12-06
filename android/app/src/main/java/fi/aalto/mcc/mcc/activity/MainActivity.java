@@ -122,10 +122,11 @@ public class MainActivity extends AppCompatActivity
     public static final int RECORD_REQUEST_CODE = 3;
     private String TAG = "Main";
     public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
+
     public static final String IMAGES_CHILD = "Images";
-    public static final String GROUP_CHILD = "group";
+    public static final String GROUP_CHILD  = "group";
     public static final String GROUPS_CHILD = "Groups";
-    public static final String USERS_CHILD = "Users";
+    public static final String USERS_CHILD  = "Users";
 
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseAuth mAuth;
@@ -354,8 +355,9 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (originalBitmap != null) {
+
+            // XXX image resize done server side now
             /*
-            // image resize done server side
             float aspectRatio = originalBitmap.getWidth() / (float) originalBitmap.getHeight();
             int width = 960;
             int height = Math.round(width / aspectRatio);
@@ -365,9 +367,9 @@ public class MainActivity extends AppCompatActivity
             // detect number of barcodes in image
             int value = doBarcodeClasssification(originalBitmap);
 
-            if (value < 0) return; // classification failed
-            else if (value > 0) savePrivateImage(originalBitmap); // save to private folder
-            else uploadToServer(originalBitmap); // publish to server
+            if (value < 0) return;                                  // <-- classification failed
+            else if (value > 0) savePrivateImage(originalBitmap);   // <-- save to private folder
+            else uploadToServer(originalBitmap);                    // <-- publish to server
         }
 
     }
@@ -745,6 +747,8 @@ public class MainActivity extends AppCompatActivity
         });
     }
 }
+
+
 
 
 

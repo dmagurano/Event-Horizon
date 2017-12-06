@@ -227,6 +227,8 @@ public class GroupManagementActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 //TODO: add group joining functionality here
+                Intent rIntent = new Intent(GroupManagementActivity.this, ReaderActivity.class);
+                startActivity(rIntent);
 
             }
         });
