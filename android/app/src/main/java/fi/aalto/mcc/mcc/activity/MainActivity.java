@@ -161,44 +161,8 @@ public class MainActivity extends AppCompatActivity
         mUser = mAuth.getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-
-        // something incomplete(?) by Matias
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                mUser = firebaseAuth.getCurrentUser();
-                if (mUser != null) {
-                    // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mUser.getUid());
-
-                    if (mUser.getPhotoUrl() != null) {
-                        //userContext.setAvatarImage(mUser.getPhotoUrl().toString());
-                    }
-
-                    //Get id token
-                    mUser.getIdToken(true)
-                            .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-                                public void onComplete(@NonNull Task<GetTokenResult> task) {
-                                    if (task.isSuccessful()) {
-                                        idToken = task.getResult().getToken();
-                                        String group = mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).toString();
-                                    } else {
-                                        // Handle error -> task.getException();
-                                    }
-                                }
-                            });
-
-                } else {
-                    // User is signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
-
-                    Intent i = new Intent(MainActivity.this, LoginActivity.class);
-                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(i);
-                }
-
-            }
-        };
+        // invoke login and load authToken
+        doLogin();
 
         // initialize toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -783,6 +747,47 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void doLogin()
+    {
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                mUser = firebaseAuth.getCurrentUser();
+                if (mUser != null) {
+                    // User is signed in
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mUser.getUid());
+
+                    if (mUser.getPhotoUrl() != null) {
+                        //userContext.setAvatarImage(mUser.getPhotoUrl().toString());
+                    }
+
+                    //Get id token
+                    mUser.getIdToken(true)
+                            .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+                                public void onComplete(@NonNull Task<GetTokenResult> task) {
+                                    if (task.isSuccessful()) {
+                                        idToken = task.getResult().getToken();
+                                        String group = mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).toString();
+                                    } else {
+                                        // Handle error -> task.getException();
+                                    }
+                                }
+                            });
+
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+
+                    Intent i = new Intent(MainActivity.this, LoginActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(i);
+                }
+
+            }
+        };
+
+    }
+
     /* ======================================================== NOT IN USE ======================================================== */
 
     // XXX multigrouping removed from use due popular demand (SM)
@@ -846,7 +851,7 @@ public class MainActivity extends AppCompatActivity
     }
 }
 
-
+/* ======================================================== NOT IN USE ======================================================== */
 
 
 

@@ -39,6 +39,7 @@ public class GalleryObject implements Serializable
         this.type = type;
         this.header = header;
         this.authorName = "Unresolved author name";
+        this.category = "Not Human";
     }
 
     public GalleryObject(Uri fileUri, String author)
