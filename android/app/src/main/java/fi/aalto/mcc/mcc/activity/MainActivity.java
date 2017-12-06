@@ -250,7 +250,6 @@ public class MainActivity extends AppCompatActivity
             makeRequest(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             return;
         } else if (checkPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-
             makeRequest(Manifest.permission.CAMERA);
             return;
         } else {

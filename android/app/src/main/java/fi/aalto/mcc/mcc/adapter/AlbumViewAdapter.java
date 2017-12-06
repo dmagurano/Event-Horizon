@@ -23,6 +23,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,9 @@ public class AlbumViewAdapter extends RecyclerView.Adapter<AlbumViewAdapter.Cust
     private String TAG = AlbumViewAdapter.class.getSimpleName();
     private ArrayList<AlbumObject> objectList;
     private Context c;
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageReference = storage.getReference();
+
 
     public class CustomViewHolder extends RecyclerView.ViewHolder {
         public TextView  title, count;
@@ -80,7 +86,12 @@ public class AlbumViewAdapter extends RecyclerView.Adapter<AlbumViewAdapter.Cust
             if (thumbnail != null)
             {
                 if ( thumbnail.isEmpty()) Glide.with(c).load(R.drawable.no_image_thumb).into(holder.thumbnail);
-                else Glide.with(c).load(thumbnail).into(holder.thumbnail);
+                else {
+                    if(thumbnail.startsWith("gs:"))
+                        Glide.with(c).using(new FirebaseImageLoader()).load(storage.getReferenceFromUrl(thumbnail)).into(holder.thumbnail);
+                    else Glide.with(c).load(thumbnail).into(holder.thumbnail);
+
+                }
             }
         }
     }

@@ -14,6 +14,9 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -39,6 +42,9 @@ public class GalleryObjectDetails extends DialogFragment {
     private Connectivity cm;
     int syncLAN = 1;
     int syncWAN = 1;
+
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageReference = storage.getReference();
 
     public static GalleryObjectDetails newInstance() {
         GalleryObjectDetails instance = new GalleryObjectDetails();
@@ -123,31 +129,43 @@ public class GalleryObjectDetails extends DialogFragment {
             View _view = layoutInflater.inflate(R.layout.image_fullscreen, null);
 
 
-            TouchImageView imageViewPreview = (TouchImageView) _view.findViewById(R.id.image_preview);
-            imageViewPreview.setImageResource(R.drawable.ic_menu_gallery);
+            TouchImageView imageViewDetails = (TouchImageView) _view.findViewById(R.id.image_preview);
+            imageViewDetails.setImageResource(R.drawable.ic_menu_gallery);
 
             // XXX might move the bandwidth detection code inside helper later (SM)
-            String imagePath = "";
+            String path = "";
             boolean hasWifi = cm.isConnectedWifi(getContext());
 
             // in LAN or Wifi
-            if (hasWifi && syncLAN == 0)   imagePath = listObjects.get(position).getSmall();
-            else if ( hasWifi && syncLAN == 1)   imagePath = listObjects.get(position).getLarge();
-            else if ( hasWifi && syncLAN == 2)   imagePath = listObjects.get(position).getXL();
+            if (hasWifi && syncLAN == 0)        path = listObjects.get(position).getSmall();
+            else if ( hasWifi && syncLAN == 1)   path = listObjects.get(position).getLarge();
+            else if ( hasWifi && syncLAN == 2)   path = listObjects.get(position).getXL();
             else
             {
                 // in WAN
-                if(syncWAN == 0) imagePath = listObjects.get(position).getSmall();
-                else if (syncWAN == 1) imagePath = listObjects.get(position).getLarge();
-                else imagePath = listObjects.get(position).getXL();
+                if(syncWAN == 0) path = listObjects.get(position).getSmall();
+                else if (syncWAN == 1) path = listObjects.get(position).getLarge();
+                else path = listObjects.get(position).getXL();
             }
 
-            Glide.with(getActivity()).load(imagePath)
-                    .thumbnail(0.5f)
-                    .placeholder(R.drawable.ic_menu_gallery)
-                    .crossFade()
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(imageViewPreview );
+            if (path != null) {
+                if (path.startsWith("gs:"))
+                    Glide.with(getActivity())
+                            .using(new FirebaseImageLoader())
+                            .load(storage.getReferenceFromUrl(path))
+                            .thumbnail(0.5f)
+                            .placeholder(R.drawable.ic_menu_gallery)
+                            .crossFade()
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(imageViewDetails);
+                else
+                    Glide.with(getActivity()).load(path)
+                            .thumbnail(0.5f)
+                            .placeholder(R.drawable.ic_menu_gallery)
+                            .crossFade()
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(imageViewDetails);
+            }
 
             container.addView(_view);
 

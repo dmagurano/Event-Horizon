@@ -99,7 +99,7 @@ public class AlbumObject implements Serializable {
             }
         }
         // add new object
-        listObjects.add(obj);
+        listObjects.add(0,obj);
     }
 
 

@@ -18,6 +18,9 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -39,6 +42,10 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
     ArrayList<GalleryObject> gridArray;
     AlbumObject album;
     int type;
+
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageReference = storage.getReference();
+
 
 
     public class CustomViewHolder extends RecyclerView.ViewHolder {
@@ -122,11 +129,23 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
         else {
             String path =  gridArray.get(position).getSmall();
 
-            if (path != null)  Glide.with(c).load(Uri.parse(path))
-                    .thumbnail(0.5f)
-                    .crossFade()
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(holder.thumbnail);
+            if (path != null) {
+                if(path.startsWith("gs:"))
+                    Glide.with(c)
+                        .using(new FirebaseImageLoader())
+                        .load(storage.getReferenceFromUrl(path))
+                        .thumbnail(0.5f)
+                        .crossFade()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(holder.thumbnail);
+                else
+                    Glide.with(c)
+                        .load(Uri.parse(path))
+                        .thumbnail(0.5f)
+                        .crossFade()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(holder.thumbnail);
+            }
 
         }
 

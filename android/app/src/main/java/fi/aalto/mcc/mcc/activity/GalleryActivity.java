@@ -17,6 +17,9 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -32,6 +35,9 @@ public class GalleryActivity extends AppCompatActivity {
 
     private static final String TAG = GalleryActivity.class.getSimpleName();
     private AlbumObject album;
+
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageReference = storage.getReference();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +65,12 @@ public class GalleryActivity extends AppCompatActivity {
         final CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.gallery_tab_collapse_toolbar);
 
         try {
-            Glide.with(this).load(album.backdrop()).into((ImageView) findViewById(R.id.gallery_tab_header));
+            String header_backdrop = album.backdrop();
+            if (header_backdrop != null) {
+                if(header_backdrop.startsWith("gs:"))
+                     Glide.with(this).using(new FirebaseImageLoader()).load(storage.getReferenceFromUrl(header_backdrop)).into((ImageView) findViewById(R.id.gallery_tab_header));
+                else Glide.with(this).load(album.backdrop()).into((ImageView) findViewById(R.id.gallery_tab_header));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
