@@ -215,6 +215,8 @@ public class GroupManagementActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(GroupManagementActivity.this, CreateGroupActivity.class);
+                i.putExtra("ID_TOKEN", idToken);
+                i.putExtra("URL", url);
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);
             }
