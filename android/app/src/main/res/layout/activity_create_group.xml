@@ -7,7 +7,7 @@
     tools:context="fi.aalto.mcc.mcc.activity.CreateGroupActivity">
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/CreateGroupName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
@@ -27,7 +27,7 @@
         android:ems="10"
         android:inputType="datetime"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:layout_constraintTop_toBottomOf="@+id/CreateGroupName" />
 
     <TextView
         android:id="@+id/CreateGroupTitle"
@@ -48,8 +48,8 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         android:text="@string/ng_name_title"
-        app:layout_constraintEnd_toStartOf="@+id/editText"
-        app:layout_constraintTop_toTopOf="@+id/editText" />
+        app:layout_constraintEnd_toStartOf="@+id/CreateGroupName"
+        app:layout_constraintTop_toTopOf="@+id/CreateGroupName" />
 
     <TextView
         android:id="@+id/groupDuration"
