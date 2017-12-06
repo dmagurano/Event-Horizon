@@ -213,6 +213,7 @@ public class MainActivity extends AppCompatActivity
 
         // add camera button to main view
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setImageResource(R.drawable.camera);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
