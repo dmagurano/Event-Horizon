@@ -237,6 +237,8 @@ public class GroupManagementActivity extends AppCompatActivity {
 
                 //TODO: add group joining functionality here
                 Intent rIntent = new Intent(GroupManagementActivity.this, ReaderActivity.class);
+                rIntent.putExtra("ID_TOKEN", idToken);
+                rIntent.putExtra("URL", url);
                 startActivity(rIntent);
 
             }
