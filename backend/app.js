@@ -67,6 +67,8 @@ app.post('/create', (req, res) => {
       //console.log(timestamp)
       //Reference to groups 
       var groupsRef = ref.child("Groups");
+      //Reference to user
+      var userRef = ref.child("Users/" + uid)
       //ref for the created group
       var newGroupRef = groupsRef.push();
       newGroupRef.set({
@@ -85,6 +87,10 @@ app.post('/create', (req, res) => {
       //update value on db
       newGroupRef.update({
         single_use_token: token
+      })
+      //Update user's group field
+      userRef.update({
+        group: newGroupId
       })
       // send response to user
       res.json({
@@ -252,9 +258,17 @@ const processAndUploadImage = (file, groupId, uid) => {
     }
     var fullres_url = null,
      highres_url = null,
-     lowres_url = null;
+     lowres_url = null,
+     author_name = null;
 
-    uploadToStorage(file, groupId, "fullres")
+    var userRef = ref.child("Users/" + uid);
+    userRef.once('value')
+    .then((data) => {
+      author_name = data.val().name
+    })
+    .then(() => {
+      return uploadToStorage(file, groupId, "fullres")
+    })
     .then((url) => {
       fullres_url = url;
       return sharp(file.buffer).resize(1280).toBuffer()
@@ -283,6 +297,7 @@ const processAndUploadImage = (file, groupId, uid) => {
       var newImgRef = imgsRef.push();
       newImgRef.set({
         author: uid,
+        author_name: author_name,
         has_people: people,
         full_res_url: fullres_url,
         high_res_url: highres_url,
