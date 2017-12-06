@@ -170,18 +170,13 @@ public class MainActivity extends AppCompatActivity
                         //userContext.setAvatarImage(mUser.getPhotoUrl().toString());
                     }
 
-                    //Get id token and send to backend via HTTPS
+                    //Get id token
                     mUser.getIdToken(true)
                             .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                                 public void onComplete(@NonNull Task<GetTokenResult> task) {
                                     if (task.isSuccessful()) {
                                         idToken = task.getResult().getToken();
                                         String group = mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).toString();
-
-                                        Log.d(TAG, "IDtoken: " + idToken);
-
-                                        //TODO: send the token to backend via HTTPS
-
                                     } else {
                                         // Handle error -> task.getException();
                                     }

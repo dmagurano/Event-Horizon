@@ -10,6 +10,7 @@ import android.content.Context;
 
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -70,6 +71,8 @@ public class AlbumViewAdapter extends RecyclerView.Adapter<AlbumViewAdapter.Cust
             holder.title.setText(album.getName());
             holder.count.setText(album.size() + " images");
             String thumbnail = album.thumbnail();
+
+            Log.d(TAG, album.getName() + " " + thumbnail);
 
             if (!album.isPublic())
                 holder.indicator.setImageResource(R.drawable.ic_not_shared);

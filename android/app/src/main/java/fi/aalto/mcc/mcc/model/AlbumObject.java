@@ -62,8 +62,9 @@ public class AlbumObject implements Serializable {
     public String thumbnail() {
         String result = "";
 
-        if(listObjects.size() >0)
+        if(listObjects.size() >0){
             result =  listObjects.get(0).getSmall();
+        }
 
         return result;
     }
@@ -71,9 +72,9 @@ public class AlbumObject implements Serializable {
     public String backdrop() {
         String result ="";
 
-        if(listObjects.size() >0)
-            result =  listObjects.get(0).getLarge();
-
+        if(listObjects.size() >0) {
+            result = listObjects.get(0).getLarge();
+        }
         return result;
     }
 
