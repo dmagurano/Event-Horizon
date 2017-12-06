@@ -291,7 +291,7 @@ const uploadToStorage = (file, groupId, resolution) => {
 
     blobStream.on('finish', () => {
       // The public URL can be used to directly access the file via HTTP.
-      const url = format(`https://storage.googleapis.com/${bucket.name}/${groupId}/${resolution}/${fileUpload.name}`);
+      const url = format(`gs://${bucket.name}${newFileName}`);
       console.log(url);
       
       resolve(url);
