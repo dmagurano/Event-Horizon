@@ -752,14 +752,13 @@ public class MainActivity extends AppCompatActivity
                             map.put(snap.getKey(), snap.getValue());
                             String key = snap.getKey();
                             String value = snap.getValue().toString();
-                            if ( key == value ) ;
                         }
                         String snapKey = snapshot.getKey();
-                        GalleryObject obj = new GalleryObject(snapshot.getKey(), map);
+                        GalleryObject obj = new GalleryObject(data.getKey(), map);
                         obj.setAuthor("unknown user"); // XXX resolve user
 
                         for (int i = 0; i < albumList.size(); i++) {
-                            if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(snapshot.getKey())) {
+                            if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(myGroup)) {
                                 albumList.get(i).add(obj);
                             }
                         }
