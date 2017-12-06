@@ -62,6 +62,7 @@ app.post('/create', (req, res) => {
       var uid = decodedToken.uid;
       //var uid = "ERUG65W6rHdWlwk5gTEABlU70vv2";
       // console.log("Token OK. UID: " + uid)
+      console.log("Group creation: "+ req.body.groupName + " User: "+ uid)
       var timestamp = new Date(req.body.expiration).getTime()
       //console.log(timestamp)
       //Reference to groups 
@@ -108,6 +109,8 @@ app.post('/join', (req, res) => {
       // console.log("Token OK. UID: " + uid)
       //Reference to the group
       var groupRef = ref.child("Groups/" + req.body.groupId);
+      var userRef = ref.child("Users/" + uid)
+      console.log("Group joining: "+ req.body.groupId + " User: "+ uid)
       // retrieve initial data
       groupRef.once("value")
       .then(function (data) {
@@ -115,7 +118,21 @@ app.post('/join', (req, res) => {
             // console.log(trueToken)
             // console.log(req.body.groupToken)
             if(trueToken === req.body.groupToken){
-                res.send("OK")
+              //Update user 
+              userRef.update({
+                group: req.body.groupId
+              })
+              // Update group member list
+              var membersRef = groupRef.child("members/");
+              membersRef.update({
+                [uid]: true
+              })
+              //Update join token
+              var newToken = crypto.randomBytes(64).toString('base64');
+              groupRef.update({
+                single_use_token: newToken
+              })
+              res.send("Group succesfully joined")
             } else {
                 res.status("400").send("The Token is not correct")
             }
@@ -125,10 +142,10 @@ app.post('/join', (req, res) => {
             res.status(500).send("Error");
       }) 
     }).catch(function(error) {
-        res.send(error.message)
+        res.status(500).send(error.message)
       });
   } else {
-      res.send("Missing Parameters")
+      res.status("400").send("Missing Parameters")
   }
 });
 
@@ -139,7 +156,9 @@ app.post('/leave', (req, res) => {
       var uid = decodedToken.uid;
       // console.log("Token OK. UID: " + uid)
       //Reference to the group
+      console.log("Group leaving/del: "+ req.body.groupId + " User: "+ uid)
       var groupRef = ref.child("Groups/" + req.body.groupId);
+      var userRef = ref.child("Users/" + uid);
       //uid = "fjdskljflskj"
       // retrieve initial data
       groupRef.once("value")
@@ -148,6 +167,9 @@ app.post('/leave', (req, res) => {
         if(groupAdmin === uid){
             groupRef.update({
                 expiration_date: new Date().getTime()
+            })
+            userRef.update({
+              group: null
             })
             res.send("Group Deleted")
         } else {
@@ -158,7 +180,10 @@ app.post('/leave', (req, res) => {
                 if(member.val() != null){
                     memberRef.remove()
                     .then(function(){
-                        res.send("User "+uid+" remove succeded")
+                      userRef.update({
+                          group: null
+                      })
+                      res.send("User "+uid+" remove succeded")
                     })
                     .catch(function(error) {
                         res.status(500).send("Remove failed: " + error.message)
@@ -174,10 +199,10 @@ app.post('/leave', (req, res) => {
             res.status(500).send("Error")
         })
     }).catch(function(error) {
-        res.send(error.message)
+        res.status(500).send(error.message)
       });
   } else {
-    res.send("Missing Parameters")
+    res.status("400").send("Missing Parameters")
   }
 });
 
