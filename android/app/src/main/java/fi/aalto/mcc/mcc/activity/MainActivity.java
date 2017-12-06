@@ -186,12 +186,6 @@ public class MainActivity extends AppCompatActivity
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
 
-        // initialize barcode detector (this may take a minute on a new phone)
-        barcodeDetector =
-                new BarcodeDetector.Builder(getApplicationContext())
-                        .setBarcodeFormats(Barcode.ALL_FORMATS)
-                        .build();
-
         // add click listener to album view
         recyclerView.addOnItemTouchListener(new AlbumViewAdapter
                 .AlbumTouchListener(this
@@ -236,6 +230,11 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // initialize barcode detector (this may take a minute on a new phone)
+        barcodeDetector =
+                new BarcodeDetector.Builder(getApplicationContext())
+                        .setBarcodeFormats(Barcode.ALL_FORMATS)
+                        .build();
 
         // initialize user name and load images from private folder
         addUserNameValueListener();
@@ -720,16 +719,11 @@ public class MainActivity extends AppCompatActivity
 
                     for (DataSnapshot data : snapshot.getChildren())
                     {
-
                         HashMap<String, Object> map = new HashMap<>();
                         for (DataSnapshot snap : data.getChildren()) {
                             map.put(snap.getKey(), snap.getValue());
-                            String key = snap.getKey();
-                            String value = snap.getValue().toString();
                         }
-                        String snapKey = snapshot.getKey();
                         GalleryObject obj = new GalleryObject(data.getKey(), map);
-
                         for (int i = 0; i < albumList.size(); i++) {
                             if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(myGroup)) {
                                 albumList.get(i).add(obj);
