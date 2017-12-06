@@ -122,7 +122,7 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
         else {
             String path =  gridArray.get(position).getSmall();
 
-            Glide.with(c).load(Uri.parse(path))
+            if (path != null)  Glide.with(c).load(Uri.parse(path))
                     .thumbnail(0.5f)
                     .crossFade()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
