@@ -67,6 +67,8 @@ app.post('/create', (req, res) => {
       //console.log(timestamp)
       //Reference to groups 
       var groupsRef = ref.child("Groups");
+      //Reference to user
+      var userRef = ref.child("Users/" + uid)
       //ref for the created group
       var newGroupRef = groupsRef.push();
       newGroupRef.set({
@@ -85,6 +87,10 @@ app.post('/create', (req, res) => {
       //update value on db
       newGroupRef.update({
         single_use_token: token
+      })
+      //Update user's group field
+      userRef.update({
+        group: newGroupId
       })
       // send response to user
       res.json({
