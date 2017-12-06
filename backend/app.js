@@ -258,9 +258,17 @@ const processAndUploadImage = (file, groupId, uid) => {
     }
     var fullres_url = null,
      highres_url = null,
-     lowres_url = null;
+     lowres_url = null,
+     author_name = null;
 
-    uploadToStorage(file, groupId, "fullres")
+    var userRef = ref.child("Users/" + uid);
+    userRef.once('value')
+    .then((data) => {
+      author_name = data.val().name
+    })
+    .then(() => {
+      return uploadToStorage(file, groupId, "fullres")
+    })
     .then((url) => {
       fullres_url = url;
       return sharp(file.buffer).resize(1280).toBuffer()
@@ -289,6 +297,7 @@ const processAndUploadImage = (file, groupId, uid) => {
       var newImgRef = imgsRef.push();
       newImgRef.set({
         author: uid,
+        author_name: author_name,
         has_people: people,
         full_res_url: fullres_url,
         high_res_url: highres_url,
