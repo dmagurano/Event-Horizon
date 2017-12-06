@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
@@ -71,6 +72,13 @@ public class CreateGroupActivity extends AppCompatActivity {
         {
             idToken =(String) b.get("ID_TOKEN");
             url = (String) b.get("URL");
+        }
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            // Show the Up button in the action bar.
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Create New Group");
         }
 
         mDisplayDate.setOnClickListener(new View.OnClickListener() {

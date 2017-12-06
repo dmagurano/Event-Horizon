@@ -8,6 +8,7 @@ import android.media.Image;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SnapHelper;
@@ -20,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -109,6 +111,13 @@ public class GroupManagementActivity extends AppCompatActivity {
         client = new OkHttpClient();
         url = "http://10.0.2.2:8080"; //CHANGE THIS TO WHERE THE CUSTOM BACKEND IS RUNNING
 
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            // Show the Up button in the action bar.
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Group Management");
+        }
 
         // Read from the user database
         mUserDatabase.child(mUser.getUid()).addValueEventListener(new ValueEventListener() {

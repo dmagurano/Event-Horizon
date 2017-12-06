@@ -34,8 +34,10 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.LoginActivity" />
         <activity android:name=".activity.RegisterActivity" />
-        <activity android:name=".activity.GroupManagementActivity" />
-        <activity android:name=".activity.CreateGroupActivity" />
+        <activity android:name=".activity.GroupManagementActivity"
+            android:parentActivityName=".activity.MainActivity"/>
+        <activity android:name=".activity.CreateGroupActivity"
+            android:parentActivityName=".activity.GroupManagementActivity"/>
         <activity
             android:name=".activity.SettingsActivity"
             android:label="@string/title_activity_settings" />
