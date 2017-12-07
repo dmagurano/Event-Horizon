@@ -298,10 +298,17 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
 
             Log.i(TAG, "A photograph was selected");
+     /*
+            new asyncClassification().execute();
+            return;
+     */
 
             try {
-                if (fileUri != null)
+                if (fileUri != null) {
+                    Log.i(TAG, "<--------- bitmap conversion starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
                     originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
+                    Log.i(TAG, "<--------- bitmap conversion ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
+                }
                 else {
                     originalBitmap = (Bitmap) data.getExtras().get("data");
                 }
@@ -328,13 +335,12 @@ public class MainActivity extends AppCompatActivity
             int height = Math.round(width / aspectRatio);
             originalBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
             */
-            int w = originalBitmap.getWidth();
-            int h = originalBitmap.getHeight();
-
             // detect number of barcodes in image
+            Log.i(TAG, "<--------- classification starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
             int value = doBarcodeClasssification(originalBitmap);
+            Log.i(TAG, "<--------- classification ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
 
-            if (value < 0) return;                                  // <-- classification failed
+            if (value < 0) return;                                           // <-- classification failed
             else if (value > 0) savePrivateImage(fileUri, originalBitmap);   // <-- save to private folder
             else uploadToServer(fileUri, originalBitmap);                    // <-- publish to server
         }
@@ -342,9 +348,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void uploadToServer(Uri uri, Bitmap bm) {
+        Toast.makeText(MainActivity.this, "Clompressing", Toast.LENGTH_SHORT).show();
+        Log.i(TAG, "<--------- transform starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.JPEG, 90, baos);
         byteUploadTarget = baos.toByteArray();
+        Log.i(TAG, "<--------- tranform ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
         //uploadTarget = Base64.encodeToString(byteUploadTarget, Base64.DEFAULT);
 
         // now remove file from Private folder
@@ -356,6 +365,46 @@ public class MainActivity extends AppCompatActivity
         new asyncUpload().execute();
     }
 
+    public class asyncClassification extends AsyncTask<Void, Void, String> {
+
+        private ProgressDialog busy = new ProgressDialog(MainActivity.this);
+
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // XXX crashes on emulator, but not on device (SM)
+            busy.setMessage("Classifying image...");
+            busy.show();
+        }
+        @Override
+        protected String doInBackground(Void... params) {
+            Bitmap bm = null;
+            try {
+                if (fileUri != null) {
+                    Log.i(TAG, "<--------- bitmap conversion starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
+                    bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), fileUri);
+                    Log.i(TAG, "<--------- bitmap conversion ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Log.i(TAG, "<--------- classification starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
+            int value = doBarcodeClasssification(bm);
+            Log.i(TAG, "<--------- classification ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
+
+            if (value < 0) return "fail";                        // <-- classification failed
+            else if (value > 0) savePrivateImage(fileUri, bm);   // <-- save to private folder
+            else uploadToServer(fileUri, bm);                    // <-- publish to server
+            return "Success";
+        }
+
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            busy.hide();
+            busy.dismiss();
+        }
+
+    }
 
     public class asyncUpload extends AsyncTask<Void, Void, String> {
 
