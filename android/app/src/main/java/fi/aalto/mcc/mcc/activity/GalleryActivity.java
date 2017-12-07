@@ -4,6 +4,7 @@ package fi.aalto.mcc.mcc.activity;
  * Created by user on 18/11/2017.
  */
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.TabLayout;
@@ -36,14 +37,14 @@ public class GalleryActivity extends AppCompatActivity {
     private static final String TAG = GalleryActivity.class.getSimpleName();
     private AlbumObject album;
 
-    FirebaseStorage storage = FirebaseStorage.getInstance();
-    StorageReference storageReference = storage.getReference();
+    FirebaseStorage storage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
 
+        storage = FirebaseStorage.getInstance();
         album = (AlbumObject) getIntent().getSerializableExtra("album");
 
         final Toolbar toolbar = (Toolbar) findViewById(R.id.gallery_tab_toolbar);
@@ -54,8 +55,20 @@ public class GalleryActivity extends AppCompatActivity {
         final ViewPager viewPager = (ViewPager) findViewById(R.id.gallery_tab_viewpager);
         TabPagerAdapter adapter = new TabPagerAdapter(getSupportFragmentManager());
 
-        adapter.add(new ByCategory(album,BY_CATEGORY), "Category");
-        adapter.add(new ByCategory(album,BY_AUTHOR), "Author");
+        ByCategory mCategory =  new ByCategory();
+        Bundle cBundle = new Bundle();
+        cBundle.putInt("type", BY_CATEGORY);
+        cBundle.putSerializable("album", album);
+        mCategory.setArguments(cBundle);
+
+        ByCategory mAuthor =  new ByCategory();
+        Bundle aBundle = new Bundle();
+        aBundle.putInt("type", BY_AUTHOR);
+        aBundle.putSerializable("album", album);
+        mAuthor.setArguments(aBundle);
+
+        adapter.add(mCategory, "Category");
+        adapter.add(mAuthor, "Author");
 
         viewPager.setAdapter(adapter);
 

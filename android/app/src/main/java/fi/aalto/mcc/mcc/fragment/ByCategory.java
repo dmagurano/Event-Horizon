@@ -39,11 +39,9 @@ public class ByCategory extends Fragment {
     private RecyclerView recyclerView;
     private Context context;
 
-    public ByCategory(AlbumObject obj, int type)
+    public ByCategory()
     {
-        this.album = obj;
-        this.type = type;
-        this.gridArray = obj.flatten(type);
+
     }
 
 
@@ -54,19 +52,15 @@ public class ByCategory extends Fragment {
 
     }
 
-    public void updateData(AlbumObject obj, int type)
-    {
-        this.album = obj;
-        this.type = type;
-        this.gridArray = obj.flatten(type);
-
-        viewAdapter.updateData(album, type);
-    }
 
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        this.type =  getArguments().getInt("type");
+        this.album = (AlbumObject) getArguments().getSerializable("album");
+        this.gridArray = album.flatten(this.type);
 
         View _view = inflater.inflate(R.layout.by_category, container, false);
 
