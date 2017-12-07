@@ -23,6 +23,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -106,6 +107,7 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
+import fi.aalto.mcc.mcc.BuildConfig;
 import fi.aalto.mcc.mcc.R;
 import fi.aalto.mcc.mcc.adapter.AlbumViewAdapter;
 import fi.aalto.mcc.mcc.model.AlbumObject;
@@ -259,7 +261,12 @@ public class MainActivity extends AppCompatActivity
 
             // XXX passing Uri to intent commmented out for time being (SM)
             // due to unknown crash
-            // takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+            File photoFile = getOutputMediaFile();
+            fileUri = FileProvider.getUriForFile(MainActivity.this,
+                    BuildConfig.APPLICATION_ID + ".provider",
+                     photoFile);
+
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
 
             startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
 
@@ -286,14 +293,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bitmap originalBitmap = null;
-        Uri uri = null;
 
         // decode answer from camera intent with or without image path
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
 
             Log.i(TAG, "A photograph was selected");
 
-            if (data != null) fileUri = data.getData();
             try {
                 if (fileUri != null)
                     originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
@@ -330,17 +335,23 @@ public class MainActivity extends AppCompatActivity
             int value = doBarcodeClasssification(originalBitmap);
 
             if (value < 0) return;                                  // <-- classification failed
-            else if (value > 0) savePrivateImage(originalBitmap);   // <-- save to private folder
-            else uploadToServer(originalBitmap);                    // <-- publish to server
+            else if (value > 0) savePrivateImage(fileUri, originalBitmap);   // <-- save to private folder
+            else uploadToServer(fileUri, originalBitmap);                    // <-- publish to server
         }
 
     }
 
-    private void uploadToServer(Bitmap bm) {
+    private void uploadToServer(Uri uri, Bitmap bm) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.JPEG, 90, baos);
         byteUploadTarget = baos.toByteArray();
         //uploadTarget = Base64.encodeToString(byteUploadTarget, Base64.DEFAULT);
+
+        // now remove file from Private folder
+        File file = new File(uri.getPath());
+        Boolean q = file.exists();
+        Boolean z = file.delete();
+        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
 
         new asyncUpload().execute();
     }
@@ -596,10 +607,10 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void savePrivateImage(Bitmap bmp) {
-        fileUri = storeImage(bmp);
+    public void savePrivateImage(Uri uri, Bitmap bmp) {
+        //fileUri = storeImage(bmp);
 
-        if (fileUri != null) {
+        if (uri != null) {
             GalleryObject obj = new GalleryObject(fileUri, myName);
             privateAlbum.add(obj);
 
@@ -641,7 +652,7 @@ public class MainActivity extends AppCompatActivity
         // Create a media file name
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
         File mediaFile;
-        String mImageName = "MI_" + timeStamp + ".jpg";
+        String mImageName = "MCC_" + timeStamp + ".jpg";
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
         return mediaFile;
     }
