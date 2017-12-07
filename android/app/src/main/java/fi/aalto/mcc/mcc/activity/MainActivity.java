@@ -723,7 +723,7 @@ public class MainActivity extends AppCompatActivity
         if(myGroupValue != null && !myGroupValue.equals("")) {
 
             // cancel previous listener if already exists
-            if (mImageRef != null && valueListenerImage != null) mImageRef.removeEventListener(valueListenerGroup);
+            if (mImageRef != null && valueListenerImage != null) mImageRef.removeEventListener(valueListenerImage);
 
             // add new listener
             mImageRef = mDatabase.child(IMAGES_CHILD).child(myGroupValue);
