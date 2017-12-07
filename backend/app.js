@@ -36,7 +36,8 @@ var serviceAccount = require("./mcc-fall-2017-g04-35ff1cc15d6d.json");
 
 admin.initializeApp({
 	credential: admin.credential.cert(serviceAccount),
-	databaseURL: "https://mcc-fall-2017-g04.firebaseio.com/"
+	databaseURL: "https://mcc-fall-2017-g04.firebaseio.com/",
+  storageBucket: "mcc-fall-2017-g04.appspot.com"
 });
 
 var db = admin.database();
@@ -52,6 +53,13 @@ const multer = Multer({
     fileSize: 50 * 1024 * 1024 // no larger than 50mb, you can change as needed.
   }
 });
+
+/* FOR THE CLEANUP CRON JOB */
+
+var tasksRoutes = require('./tasks');
+app.use('/tasks', tasksRoutes);
+
+//////////////////////////////
 
 app.use(bodyParser.json());
 
@@ -222,9 +230,10 @@ app.post('/leave', (req, res) => {
 app.post('/upload', multer.single('file'), (req, res) => {
   //console.log('Upload Image');
   if(req.body.idToken != undefined && req.body.groupId != undefined){
-    admin.auth().verifyIdToken(req.body.idToken)
+  admin.auth().verifyIdToken(req.body.idToken)
     .then(function(decodedToken) {
       var uid = decodedToken.uid;
+      console.log("Image upload to group: "+ req.body.groupId + " User: "+ uid)
       let file = req.file;
       if (file) {
         processAndUploadImage(file, req.body.groupId, uid).then((success) => {

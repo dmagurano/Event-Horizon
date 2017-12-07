@@ -1,0 +1,4 @@
+cron:
+- description: "expired group cleanup"
+  url: /tasks/cleanup
+  schedule: every 1 hours
