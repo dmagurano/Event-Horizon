@@ -687,6 +687,9 @@ public class MainActivity extends AppCompatActivity
 
     public void addGroupListener(String myGroupValue) {
 
+        // sanity check for group key
+        if( myGroupValue== null || myGroupValue.equals("")) return;
+
         // cancel previous listener if already exists
         if (mGroupRef != null && valueListenerGroup != null) mGroupRef.removeEventListener(valueListenerGroup);
 
