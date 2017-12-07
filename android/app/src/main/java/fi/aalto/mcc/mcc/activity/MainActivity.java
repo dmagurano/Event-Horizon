@@ -132,7 +132,8 @@ public class MainActivity extends AppCompatActivity
 
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseAuth mAuth;
-    private DatabaseReference mDatabase;
+    private DatabaseReference mDatabase = null, mGroupRef = null, mImageRef = null;
+    private  ValueEventListener valueListenerGroup = null, valueListenerImage = null;
     private FirebaseUser mUser;
     private FirebaseRemoteConfig mRemoteConfig;
 
@@ -685,10 +686,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void addGroupListener(String myGroupValue) {
-        mDatabase.child(GROUPS_CHILD).child(myGroupValue).addValueEventListener(new ValueEventListener() {
+
+        // cancel previous listener if already exists
+        if (mGroupRef != null && valueListenerGroup != null) mGroupRef.removeEventListener(valueListenerGroup);
+
+        // add new listener
+        mGroupRef= mDatabase.child(GROUPS_CHILD).child(myGroupValue);
+        mGroupRef.addValueEventListener(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot snapshot) {
+                valueListenerGroup = this;
                 albumList.clear();
                 albumList.add(privateAlbum);
                 HashMap<String, Object> map = new HashMap<>();
@@ -713,9 +721,16 @@ public class MainActivity extends AppCompatActivity
     public void addImageListener(String myGroupValue) {
 
         if(myGroupValue != null && !myGroupValue.equals("")) {
-            mDatabase.child(IMAGES_CHILD).child(myGroupValue).addValueEventListener(new ValueEventListener() {
+
+            // cancel previous listener if already exists
+            if (mImageRef != null && valueListenerImage != null) mImageRef.removeEventListener(valueListenerGroup);
+
+            // add new listener
+            mImageRef = mDatabase.child(IMAGES_CHILD).child(myGroupValue);
+            mImageRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot snapshot) {
+                    valueListenerImage = this;
 
                     for (DataSnapshot data : snapshot.getChildren())
                     {
