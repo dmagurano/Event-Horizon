@@ -298,10 +298,11 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
 
             Log.i(TAG, "A photograph was selected");
-     /*
+
             new asyncClassification().execute();
             return;
-     */
+
+            /*
 
             try {
                 if (fileUri != null) {
@@ -328,13 +329,6 @@ public class MainActivity extends AppCompatActivity
 
         if (originalBitmap != null) {
 
-            // XXX image resize done server side now
-            /*
-            float aspectRatio = originalBitmap.getWidth() / (float) originalBitmap.getHeight();
-            int width = 960;
-            int height = Math.round(width / aspectRatio);
-            originalBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
-            */
             // detect number of barcodes in image
             Log.i(TAG, "<--------- classification starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
             int value = doBarcodeClasssification(originalBitmap);
@@ -343,12 +337,13 @@ public class MainActivity extends AppCompatActivity
             if (value < 0) return;                                           // <-- classification failed
             else if (value > 0) savePrivateImage(fileUri, originalBitmap);   // <-- save to private folder
             else uploadToServer(fileUri, originalBitmap);                    // <-- publish to server
+        */
         }
+
 
     }
 
     private void uploadToServer(Uri uri, Bitmap bm) {
-        Toast.makeText(MainActivity.this, "Clompressing", Toast.LENGTH_SHORT).show();
         Log.i(TAG, "<--------- transform starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.JPEG, 90, baos);
@@ -372,7 +367,7 @@ public class MainActivity extends AppCompatActivity
         protected void onPreExecute() {
             super.onPreExecute();
             // XXX crashes on emulator, but not on device (SM)
-            busy.setMessage("Classifying image...");
+            busy.setMessage("Processing image for upload...");
             busy.show();
         }
         @Override
@@ -413,8 +408,8 @@ public class MainActivity extends AppCompatActivity
         protected void onPreExecute() {
             super.onPreExecute();
             // XXX crashes on emulator, but not on device (SM)
-            busy.setMessage("Uploading to Server...");
-            busy.show();
+            //busy.setMessage("Uploading to Server...");
+            //busy.show();
         }
 
         @Override
@@ -453,8 +448,8 @@ public class MainActivity extends AppCompatActivity
 
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            busy.hide();
-            busy.dismiss();
+            //busy.hide();
+            //busy.dismiss();
         }
     }
 
