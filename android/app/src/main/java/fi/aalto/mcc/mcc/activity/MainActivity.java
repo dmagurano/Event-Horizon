@@ -219,7 +219,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view, int position) {
 
-                int x = albumList.size();
                 if (albumList != null && position >=0 && albumList.size() > position ) {
                     AlbumObject obj = albumList.get(position);
                     if (obj == null) return;
