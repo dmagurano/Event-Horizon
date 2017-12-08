@@ -367,7 +367,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public int doPhotoClasssification(Bitmap bitmap) {
-        if (!barcodeDetector.isOperational())
+        if (!barcodeDetector.isOperational() || bitmap == null)
         {
             return -1;
         }
