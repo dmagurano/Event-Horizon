@@ -262,12 +262,6 @@ public class MainActivity extends AppCompatActivity
                         .setBarcodeFormats(Barcode.ALL_FORMATS)
                         .build();
 
-        // initialize user name and load images from private folder
-        addUserNameValueListenerEx();
-
-        // initialize primary data listeners in order
-        addUserGroupValueListener();
-
     }
 
 
@@ -807,14 +801,16 @@ public class MainActivity extends AppCompatActivity
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 mUser = firebaseAuth.getCurrentUser();
                 if (mUser != null) {
-                    // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mUser.getUid());
 
-                    if (mUser.getPhotoUrl() != null) {
-                        //userContext.setAvatarImage(mUser.getPhotoUrl().toString());
+                    if(!initDone) {
+                        // initialize user name and load images from private folder
+                        addUserNameValueListenerEx();
+
+                        // initialize primary data listeners in order
+                        addUserGroupValueListener();
                     }
 
-                    //Get id token
+                    // get id token
                     mUser.getIdToken(true)
                             .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                                 public void onComplete(@NonNull Task<GetTokenResult> task) {
