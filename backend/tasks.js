@@ -43,21 +43,20 @@ router.route('/cleanup').get( (req, res) => {
                 return groupImagesRef.remove()
               })
               .then(function() {
-                console.log("Group "+grp.key+" was expired and removed correctly")
+                //console.log("Group "+grp.key+" was expired and removed correctly")
                 //res.send("Group "+grp.key+" was expired and removed correctly")
               })
               .catch(function(error) {
-                console.log("Error deleting "+grp.key+": "+error)
+                console.log("Error deleting "+img.key+": "+error)
               })
-              .then(function() {
-                res.send("Cleanup finished")
-              })
-            })
+            })//forEach image
+            console.log("Group "+grp.key+" was expired and removed correctly")
           })
           
         })
       }	
-	  });
+	  });//forEach group
+    res.send("Cleanup finished")
 	});
 });
 
