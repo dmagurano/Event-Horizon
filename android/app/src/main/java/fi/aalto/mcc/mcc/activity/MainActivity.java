@@ -218,13 +218,18 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onClick(View view, int position) {
-                AlbumObject obj = albumList.get(position);
 
-                Intent intent = new Intent(MainActivity.this, GalleryActivity.class);
+                int x = albumList.size();
+                if (albumList != null && position >=0 && albumList.size() > position ) {
+                    AlbumObject obj = albumList.get(position);
+                    if (obj == null) return;
 
-                if (intent != null && obj != null) {
-                    intent.putExtra("album", obj);
-                    startActivity(intent);
+                    Intent intent = new Intent(MainActivity.this, GalleryActivity.class);
+
+                    if (intent != null && obj != null) {
+                        intent.putExtra("album", obj);
+                        startActivity(intent);
+                    }
                 }
 
             }
