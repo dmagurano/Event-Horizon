@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -173,6 +174,7 @@ public class MainActivity extends AppCompatActivity
     private FirebaseRemoteConfig mRemoteConfig;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -324,6 +326,8 @@ public class MainActivity extends AppCompatActivity
 
     public class startPhotoPostProcessing extends AsyncTask<Void, Void, String> {
 
+        int value;
+        Bitmap bitmap;
         private ProgressDialog busy = new ProgressDialog(MainActivity.this);
 
         protected void onPreExecute() {
@@ -333,7 +337,7 @@ public class MainActivity extends AppCompatActivity
         }
         @Override
         protected String doInBackground(Void... params) {
-            Bitmap bitmap = null;
+            bitmap = null;
 
             // load photo to bitmap
             try {
@@ -345,16 +349,17 @@ public class MainActivity extends AppCompatActivity
             }
 
             // classify image
-            int value = doPhotoClasssification(bitmap);
+            value = doPhotoClasssification(bitmap);
+//            SystemClock.sleep(2000);
 
             if (value < 0) return "Fail";                             // <-- classification failed
-            else if (value > 0) savePhotoToPrivateFolder( bitmap );   // <-- save to private folder
-            else uploadPhotoToServer( bitmap );                       // <-- publish to server
-            return "Success";
+            else return "Success";
         }
 
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
+            if (value > 0) savePhotoToPrivateFolder( bitmap );   // <-- save to private folder
+            else uploadPhotoToServer( bitmap ); // <-- publish to server
             busy.hide();
             busy.dismiss();
             adapter.notifyDataSetChanged();
@@ -386,12 +391,13 @@ public class MainActivity extends AppCompatActivity
 
     public class startPhotoUpload extends AsyncTask<Void, Void, String> {
 
-        //private ProgressDialog busy = new ProgressDialog(MainActivity.this);
+        private ProgressDialog busy = new ProgressDialog(MainActivity.this);
 
         protected void onPreExecute() {
             super.onPreExecute();
-            //busy.setMessage("Uploading to Server...");
-            //busy.show();
+//            busy = new ProgressDialog(MainActivity.this);
+            busy.setMessage("Uploading to Server...");
+            busy.show();
         }
 
         @Override
@@ -431,8 +437,8 @@ public class MainActivity extends AppCompatActivity
                 file.delete();
             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uriPhotoFileTarget));
 
-            //busy.hide();
-            //busy.dismiss();
+            busy.hide();
+            busy.dismiss();
         }
     }
 
