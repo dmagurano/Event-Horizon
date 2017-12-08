@@ -134,15 +134,15 @@ public class GalleryViewAdapter extends  RecyclerView.Adapter<GalleryViewAdapter
                     Glide.with(c)
                         .using(new FirebaseImageLoader())
                         .load(storage.getReferenceFromUrl(path))
-                        .thumbnail(0.5f)
-                        .crossFade()
+                        //.thumbnail(0.5f)
+                        //.crossFade()
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(holder.thumbnail);
                 else
                     Glide.with(c)
                         .load(Uri.parse(path))
-                        .thumbnail(0.5f)
-                        .crossFade()
+                        //.thumbnail(0.5f)
+                        //.crossFade()
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(holder.thumbnail);
             }

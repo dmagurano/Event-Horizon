@@ -123,7 +123,15 @@ public class MainActivity extends AppCompatActivity
     public static final int MEDIA_REQUEST_CODE  = 2;
     public static final int RECORD_REQUEST_CODE = 3;
 
-    private String TAG = "Main";
+    public static final int FILE_UNCLASSIFIED = 1;
+    public static final int FILE_CLASSIFIED = 2;
+
+    public static final String DIR_CLASSIFIED = "/PrivateFiles";
+    public static final String DIR_UNCLASSIFIED = "/Unprocessed";
+    public static final String DIR_DATA = "/Android/data/";
+
+    private String TAG = GalleryActivity.class.getSimpleName();
+
     public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
 
     public static final String IMAGES_CHILD = "Images";
@@ -131,6 +139,14 @@ public class MainActivity extends AppCompatActivity
     public static final String NAME_CHILD   = "name";
     public static final String GROUPS_CHILD = "Groups";
     public static final String USERS_CHILD  = "Users";
+
+    public static final String UPLOAD_FORM_ID         = "idToken";
+    public static final String UPLOAD_FORM_GROUP      = "groupId";
+    public static final String UPLOAD_FORM_NAME       = "author_name";
+    public static final String UPLOAD_FORM_FILE       = "file";
+    public static final String UPLOAD_FORM_FILE_NAME  = "file.jpg";
+    public static final String UPLOAD_FORM_MIME       = "image/jpeg";
+
 
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseAuth mAuth;
@@ -142,17 +158,17 @@ public class MainActivity extends AppCompatActivity
 
     BarcodeDetector barcodeDetector;
 
-    static Uri fileUri;
-    String uploadTarget;
-    byte[] byteUploadTarget;
-    String idToken;
+    static Uri uriPhotoFileTarget;
+    byte[] bytePhotoUploadTarget;
+
+    String myID;
     String myGroup;
     String myName;
 
-    private RecyclerView recyclerView;
-    private AlbumViewAdapter adapter;
-    private ArrayList<AlbumObject> albumList;
-    AlbumObject privateAlbum;
+    private RecyclerView            recyclerView;
+    private AlbumViewAdapter        adapter;
+    private ArrayList<AlbumObject>  albumList;
+    private AlbumObject             privateAlbum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -220,7 +236,7 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snap(view);
+                OnPhotoButton(view);
             }
         });
 
@@ -249,7 +265,9 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void Snap(View v) {
+    public void OnPhotoButton(View v)
+    {
+        // get permission one by one
         if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             makeRequest(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             return;
@@ -257,29 +275,33 @@ public class MainActivity extends AppCompatActivity
             makeRequest(Manifest.permission.CAMERA);
             return;
         } else {
+
+
             final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-            // XXX passing Uri to intent commmented out for time being (SM)
-            // due to unknown crash
-            File photoFile = getOutputMediaFile();
-            fileUri = FileProvider.getUriForFile(MainActivity.this,
+            File photoFile = getOutputMediaFile(FILE_UNCLASSIFIED);
+
+            uriPhotoFileTarget = FileProvider.getUriForFile(MainActivity.this,
                     BuildConfig.APPLICATION_ID + ".provider",
                      photoFile);
 
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriPhotoFileTarget);
 
             startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
 
 
-            // XXX used for temporarily media selector for testing purposes (SM)
-            //Intent intent = new Intent();
-            //intent.setType("image/*");
-            //intent.setAction(Intent.ACTION_GET_CONTENT);
-            //startActivityForResult(Intent.createChooser(intent, "Select an image"), MEDIA_REQUEST_CODE);
+            // Below code used for media selector for testing purposes (SM)
+            // Intent intent = new Intent();
+            // intent.setType("image/*");
+            // intent.setAction(Intent.ACTION_GET_CONTENT);
+            // startActivityForResult(Intent.createChooser(intent, "Select an image"), MEDIA_REQUEST_CODE);
         }
 
 
     }
+
+
+
 
 
     private int checkPermission(String permission) {
@@ -299,97 +321,41 @@ public class MainActivity extends AppCompatActivity
 
             Log.i(TAG, "A photograph was selected");
 
-            new asyncClassification().execute();
-            return;
-
-            /*
-
-            try {
-                if (fileUri != null) {
-                    Log.i(TAG, "<--------- bitmap conversion starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
-                    originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
-                    Log.i(TAG, "<--------- bitmap conversion ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
-                }
-                else {
-                    originalBitmap = (Bitmap) data.getExtras().get("data");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            // in case media gallery was used instead of camera, decode file path to bitmap
-        } else if (requestCode == MEDIA_REQUEST_CODE && resultCode == RESULT_OK) {
-            try {
-                if (data != null) fileUri = data.getData();
-                originalBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fileUri);
-                Log.i(TAG, "An image was selected from Media Gallery");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            new startPhotoPostProcessing().execute();
         }
-
-        if (originalBitmap != null) {
-
-            // detect number of barcodes in image
-            Log.i(TAG, "<--------- classification starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
-            int value = doBarcodeClasssification(originalBitmap);
-            Log.i(TAG, "<--------- classification ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
-
-            if (value < 0) return;                                           // <-- classification failed
-            else if (value > 0) savePrivateImage(fileUri, originalBitmap);   // <-- save to private folder
-            else uploadToServer(fileUri, originalBitmap);                    // <-- publish to server
-        */
-        }
-
-
     }
 
-    private void uploadToServer(Uri uri, Bitmap bm) {
-        Log.i(TAG, "<--------- transform starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, 90, baos);
-        byteUploadTarget = baos.toByteArray();
-        Log.i(TAG, "<--------- tranform ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
-        //uploadTarget = Base64.encodeToString(byteUploadTarget, Base64.DEFAULT);
 
-        // now remove file from Private folder
-        File file = new File(uri.getPath());
-        Boolean q = file.exists();
-        Boolean z = file.delete();
-        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
 
-        new asyncUpload().execute();
-    }
 
-    public class asyncClassification extends AsyncTask<Void, Void, String> {
+    public class startPhotoPostProcessing extends AsyncTask<Void, Void, String> {
 
         private ProgressDialog busy = new ProgressDialog(MainActivity.this);
 
         protected void onPreExecute() {
             super.onPreExecute();
-            // XXX crashes on emulator, but not on device (SM)
-            busy.setMessage("Processing image for upload...");
+            busy.setMessage("Processing new image...");
             busy.show();
         }
         @Override
         protected String doInBackground(Void... params) {
-            Bitmap bm = null;
+            Bitmap bitmap = null;
+
+            // load photo to bitmap
             try {
-                if (fileUri != null) {
-                    Log.i(TAG, "<--------- bitmap conversion starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
-                    bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), fileUri);
-                    Log.i(TAG, "<--------- bitmap conversion ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
+                if (uriPhotoFileTarget != null) {
+                    bitmap = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), uriPhotoFileTarget);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            Log.i(TAG, "<--------- classification starts "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
-            int value = doBarcodeClasssification(bm);
-            Log.i(TAG, "<--------- classification ends "+ new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + " --------->");
+            // classify image
+            int value = doPhotoClasssification(bitmap);
 
-            if (value < 0) return "fail";                        // <-- classification failed
-            else if (value > 0) savePrivateImage(fileUri, bm);   // <-- save to private folder
-            else uploadToServer(fileUri, bm);                    // <-- publish to server
+            if (value < 0) return "Fail";                             // <-- classification failed
+            else if (value > 0) savePhotoToPrivateFolder( bitmap );   // <-- save to private folder
+            else uploadPhotoToServer( bitmap );                       // <-- publish to server
             return "Success";
         }
 
@@ -397,26 +363,45 @@ public class MainActivity extends AppCompatActivity
             super.onPostExecute(result);
             busy.hide();
             busy.dismiss();
+            adapter.notifyDataSetChanged();
+
         }
 
     }
 
-    public class asyncUpload extends AsyncTask<Void, Void, String> {
+    public int doPhotoClasssification(Bitmap bitmap) {
+        if (!barcodeDetector.isOperational())
+        {
+            return -1;
+        }
+        Frame frame = new Frame.Builder().setBitmap(bitmap).build();
+        SparseArray<Barcode> barcodes = barcodeDetector.detect(frame);
+        return barcodes.size();
+    }
+
+
+    private void uploadPhotoToServer(Bitmap bitmap)
+    {
+        ByteArrayOutputStream streamOutput = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, streamOutput);
+        bytePhotoUploadTarget = streamOutput.toByteArray();
+
+        new startPhotoUpload().execute();
+    }
+
+
+    public class startPhotoUpload extends AsyncTask<Void, Void, String> {
 
         private ProgressDialog busy = new ProgressDialog(MainActivity.this);
 
         protected void onPreExecute() {
             super.onPreExecute();
-            // XXX crashes on emulator, but not on device (SM)
             //busy.setMessage("Uploading to Server...");
             //busy.show();
         }
 
         @Override
         protected String doInBackground(Void... params) {
-
-            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-            nameValuePairs.add(new BasicNameValuePair("file", uploadTarget));
 
             try {
                 HttpClient httpclient = new DefaultHttpClient();
@@ -425,54 +410,40 @@ public class MainActivity extends AppCompatActivity
                 MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                 builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 
-                ContentBody cd = new ByteArrayBody(byteUploadTarget, "image/jpeg", "file.jpg");
-                builder.addPart("file", cd);
+                ContentBody contentBody = new ByteArrayBody(bytePhotoUploadTarget, UPLOAD_FORM_MIME, UPLOAD_FORM_FILE_NAME);
+                builder.addPart(UPLOAD_FORM_FILE, contentBody);
+                builder.addPart(UPLOAD_FORM_ID, new StringBody(myID, ContentType.TEXT_PLAIN));
+                builder.addPart(UPLOAD_FORM_GROUP, new StringBody(myGroup, ContentType.TEXT_PLAIN));
+                builder.addPart(UPLOAD_FORM_NAME, new StringBody(myName, ContentType.TEXT_PLAIN));
 
-                builder.addPart("idToken", new StringBody(idToken, ContentType.TEXT_PLAIN));
-                builder.addPart("groupId", new StringBody(myGroup, ContentType.TEXT_PLAIN));
-                builder.addPart("author_name", new StringBody(myName, ContentType.TEXT_PLAIN));
                 httppost.setEntity(builder.build());
 
                 HttpResponse response = httpclient.execute(httppost);
                 String s = EntityUtils.toString(response.getEntity());
-                //Toast.makeText(MainActivity.this, "Server: " + s, Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "Connection response: " + s);
 
             } catch (Exception e) {
-                //Toast.makeText(MainActivity.this, "Connection error: " + e.toString(), Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "Connection error: " + e.toString());
             }
-            Log.i(TAG, "Upload done");
+            Log.i(TAG, "Upload done.");
             return "Success";
         }
 
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
+
+            File file = new File(uriPhotoFileTarget.getPath());
+            if (file.exists())
+                file.delete();
+            sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uriPhotoFileTarget));
+
             //busy.hide();
             //busy.dismiss();
         }
     }
 
 
-    public int doBarcodeClasssification(Bitmap bitmap) {
-        if (!barcodeDetector.isOperational()) {
-            /*
-            new android.os.Handler().postDelayed(
-                    new Runnable() {
-                        public void run() {
-                            doBarcodeClasssification(bitmap);
-                            Log.e(TAG, "Barcode detector is not yet operational. Retrying after 10 seconds");
-                        }
-                    }, 10000);
-                    */
-            return -1;
-        }
 
-        Frame frame = new Frame.Builder().setBitmap(bitmap).build();
-        // detecting barcodes
-        SparseArray<Barcode> barcodes = barcodeDetector.detect(frame);
-        return barcodes.size();
-    }
 
 
     // Converting dp to pixel
@@ -560,12 +531,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -580,7 +548,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            Snap(this.getCurrentFocus());
+            OnPhotoButton(this.getCurrentFocus());
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_group) {
@@ -612,95 +580,107 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
+
+
+
+
+    /* ======================================================== PHOTO FILE IO  ======================================================== */
+
+
+    public AlbumObject createPrivateAlbum() {
+
+        AlbumObject albumObject = new AlbumObject("Private", false);
+        loadPrivateImages(albumObject);
+
+        return albumObject;
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
-        }
-    }
 
-
-    public AlbumObject makePrivateAlbum() {
-
-        AlbumObject a = new AlbumObject("Private", false);
-        loadPrivateImages(a);
-
-        return a;
-    }
-
-    private void loadPrivateImages(AlbumObject to) {
+    private void loadPrivateImages(AlbumObject toAlbum) {
         GalleryObject obj = null;
-        String path = Environment.getExternalStorageDirectory().toString() + "/Android/data/"
+
+        String path = Environment.getExternalStorageDirectory().toString()
+                + DIR_DATA
                 + getApplicationContext().getPackageName()
-                + "/MyFiles";
+                + DIR_CLASSIFIED;
+
         File directory = new File(path);
         File[] files = directory.listFiles();
+
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
                 obj = new GalleryObject(Uri.fromFile(files[i]), myName);
-                to.add(obj);
+                toAlbum.add(obj);
             }
         }
     }
 
 
-    public void savePrivateImage(Uri uri, Bitmap bmp) {
-        //fileUri = storeImage(bmp);
+    public void savePhotoToPrivateFolder(Bitmap bitmap) {
 
-        if (uri != null) {
-            GalleryObject obj = new GalleryObject(fileUri, myName);
-            privateAlbum.add(obj);
+        File pictureFile = getOutputMediaFile(FILE_CLASSIFIED);
 
-            adapter.notifyDataSetChanged();
-            Toast.makeText(MainActivity.this, "Image added to Private folder", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private Uri storeImage(Bitmap image) {
-        File pictureFile = getOutputMediaFile();
         if (pictureFile == null) {
-            return null;
+            return;
         }
         try {
-            FileOutputStream fos = new FileOutputStream(pictureFile);
-            image.compress(Bitmap.CompressFormat.JPEG, 90, fos);
-            fos.close();
-            return Uri.fromFile(pictureFile);
+            FileOutputStream streamOutput = new FileOutputStream(pictureFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, streamOutput);
+            streamOutput.close();
         } catch (FileNotFoundException e) {
             Log.d(TAG, "File not found: " + e.getMessage());
+            return;
         } catch (IOException e) {
             Log.d(TAG, "Error accessing file: " + e.getMessage());
+            return;
         }
-        return null;
+
+        GalleryObject privatePhoto = new GalleryObject(Uri.fromFile(pictureFile), myName);
+        privateAlbum.add(privatePhoto);
     }
 
-    private File getOutputMediaFile() {
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
-                + "/Android/data/"
-                + getApplicationContext().getPackageName()
-                + "/MyFiles");
 
-        // Create the storage directory if it does not exist
+
+    private File getOutputMediaFile(int type) {
+        File mediaStorageDir = null;
+
+        switch (type){
+            case FILE_UNCLASSIFIED:
+                 mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                        + DIR_DATA
+                        + getApplicationContext().getPackageName()
+                        + DIR_UNCLASSIFIED);
+                 break
+                         ;
+            case FILE_CLASSIFIED:
+                mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                        + DIR_DATA
+                        + getApplicationContext().getPackageName()
+                        + DIR_CLASSIFIED);
+                break;
+        }
+
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 return null;
             }
         }
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
-        File mediaFile;
-        String mImageName = "MCC_" + timeStamp + ".jpg";
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
-        return mediaFile;
+
+        String mPhotoName = "MCC_" + new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + ".jpg";
+        File mPhotoFile = new File(mediaStorageDir.getPath() + File.separator + mPhotoName);
+        return mPhotoFile;
     }
 
+
+
+
+
+
+
+
+
+
+    /* ======================================================== FIREBASE  ======================================================== */
 
 
     public void addUserNameValueListener() {
@@ -710,7 +690,7 @@ public class MainActivity extends AppCompatActivity
                 if( snapshot.getValue() != null) {
                     myName = snapshot.getValue().toString();
                 }
-                privateAlbum = makePrivateAlbum();
+                privateAlbum = createPrivateAlbum();
             }
 
             @Override
@@ -742,7 +722,7 @@ public class MainActivity extends AppCompatActivity
 
     public void addGroupListener(String myGroupValue) {
 
-        // sanity check for group key
+        // sanity check for valid group key
         if( myGroupValue== null || myGroupValue.equals("")) return;
 
         // cancel previous listener if already exists
@@ -833,7 +813,7 @@ public class MainActivity extends AppCompatActivity
                             .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                                 public void onComplete(@NonNull Task<GetTokenResult> task) {
                                     if (task.isSuccessful()) {
-                                        idToken = task.getResult().getToken();
+                                        myID = task.getResult().getToken();
                                         String group = mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).toString();
                                     } else {
                                         // Handle error -> task.getException();
@@ -853,6 +833,20 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
     }
 
     /* ======================================================== NOT IN USE ======================================================== */
