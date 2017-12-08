@@ -680,7 +680,7 @@ public class MainActivity extends AppCompatActivity
 
         if (mUser.getUid() == null) {
             Snackbar.make(this.getCurrentFocus(), "User login has failed.", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
+                    .setAction("Error", null).show();
             return;
         }
 
@@ -710,7 +710,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
-                Snackbar.make(getCurrentFocus(), "Failed to read user information: " +  error.toException(), Snackbar.LENGTH_LONG).setAction("Notification", null).show();
+                Snackbar.make(getCurrentFocus(), "Failed to read user information: " +  error.toException(), Snackbar.LENGTH_LONG).setAction("Error", null).show();
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
@@ -770,6 +770,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
+                Snackbar.make(getCurrentFocus(), "Failed to read user group information: " +  error.toException(), Snackbar.LENGTH_LONG).setAction("Error", null).show();
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
@@ -814,6 +815,7 @@ public class MainActivity extends AppCompatActivity
 
                 @Override
                 public void onCancelled(DatabaseError error) {
+                    Snackbar.make(getCurrentFocus(), "Failed to read greoup images: " +  error.toException(), Snackbar.LENGTH_LONG).setAction("Error", null).show();
                     Log.w(TAG, "Failed to read value.", error.toException());
                 }
             });
