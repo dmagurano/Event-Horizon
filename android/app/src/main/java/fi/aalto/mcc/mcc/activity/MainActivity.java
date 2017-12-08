@@ -154,6 +154,7 @@ public class MainActivity extends AppCompatActivity
     BarcodeDetector                 barcodeDetector;
     static Uri                      uriPhotoFileTarget;
     byte[]                          bytePhotoUploadTarget;
+    boolean                         initDone = false;
 
     String                          myID;
     String                          myGroup;
@@ -350,7 +351,6 @@ public class MainActivity extends AppCompatActivity
 
             // classify image
             value = doPhotoClasssification(bitmap);
-//            SystemClock.sleep(2000);
 
             if (value < 0) return "Fail";                             // <-- classification failed
             else return "Success";
@@ -358,8 +358,8 @@ public class MainActivity extends AppCompatActivity
 
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            if (value > 0) savePhotoToPrivateFolder( bitmap );   // <-- save to private folder
-            else uploadPhotoToServer( bitmap ); // <-- publish to server
+            if (value > 0) savePhotoToPrivateFolder( bitmap );      // <-- save to private folder
+            else uploadPhotoToServer( bitmap );                     // <-- publish to server
             busy.hide();
             busy.dismiss();
             adapter.notifyDataSetChanged();
@@ -395,9 +395,8 @@ public class MainActivity extends AppCompatActivity
 
         protected void onPreExecute() {
             super.onPreExecute();
-//            busy = new ProgressDialog(MainActivity.this);
             busy.setMessage("Uploading to Server...");
-            busy.show();
+            //busy.show();
         }
 
         @Override
@@ -682,33 +681,23 @@ public class MainActivity extends AppCompatActivity
     /* ======================================================== FIREBASE  ======================================================== */
 
 
-    public void addUserNameValueListener() {
-        mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(NAME_CHILD).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if( snapshot.getValue() != null) {
-                    myName = snapshot.getValue().toString();
-                }
-                privateAlbum = createPrivateAlbum();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-        });
-    }
-
 
     public void addUserNameValueListenerEx() {
+
+        if (mUser.getUid() == null) {
+            Snackbar.make(this.getCurrentFocus(), "User login has failed.", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            return;
+        }
+
+
         mDatabase.child(USERS_CHILD).child(mUser.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 for (DataSnapshot data : snapshot.getChildren()) {
-                    if( data.getKey().equals(NAME_CHILD))  myName = data.getValue().toString();
-                    if( data.getKey().equals(PHOTO_CHILD)) myPhotoUrl = data.getValue().toString();
-                    if( data.getKey().equals(EMAIL_CHILD)) myEmail = data.getValue().toString();
+                    if( data.getKey().equals(NAME_CHILD)  && data.getValue() != null )  myName = data.getValue().toString();
+                    if( data.getKey().equals(PHOTO_CHILD) && data.getValue() != null)   myPhotoUrl = data.getValue().toString();
+                    if( data.getKey().equals(EMAIL_CHILD) && data.getValue() != null)   myEmail = data.getValue().toString();
                 }
 
                 ImageView mPhoto =  (ImageView)findViewById(R.id.imageUserPhoto);
@@ -730,24 +719,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-
-    public void addUserGroupValueListener() {
-        mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if( snapshot.getValue() != null) {
-                    myGroup = snapshot.getValue().toString();
-                    addGroupListener(myGroup);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-        });
-    }
 
     public void addGroupListener(String myGroupValue) {
 
@@ -798,9 +769,9 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onDataChange(DataSnapshot snapshot) {
                     valueListenerImage = this;
+                    GalleryObject lastAdded = null;
 
-                    for (DataSnapshot data : snapshot.getChildren())
-                    {
+                    for (DataSnapshot data : snapshot.getChildren()) {
                         HashMap<String, Object> map = new HashMap<>();
                         for (DataSnapshot snap : data.getChildren()) {
                             map.put(snap.getKey(), snap.getValue());
@@ -809,10 +780,16 @@ public class MainActivity extends AppCompatActivity
                         for (int i = 0; i < albumList.size(); i++) {
                             if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(myGroup)) {
                                 albumList.get(i).add(obj);
+                                lastAdded = obj;
                             }
                         }
                     }
+                    if (lastAdded != null && initDone) {
+                        Snackbar.make(getCurrentFocus(), "User " + lastAdded.getAuthor() + " posted a new image.", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    }
                     adapter.notifyDataSetChanged();
+                    initDone = true;
+
                 }
 
                 @Override
@@ -930,6 +907,26 @@ public class MainActivity extends AppCompatActivity
                     albumList.add(obj);
                 }
                 adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    public void addUserGroupValueListener() {
+        if (mUser.getUid() == null) return;
+
+        mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if( snapshot.getValue() != null) {
+                    myGroup = snapshot.getValue().toString();
+                    addGroupListener(myGroup);
+                }
             }
 
             @Override
