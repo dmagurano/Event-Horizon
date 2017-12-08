@@ -109,7 +109,7 @@ public class GroupManagementActivity extends AppCompatActivity {
         mGroupMembers = (ListView) findViewById(R.id.membersList);
 
         client = new OkHttpClient();
-        url = "http://10.0.2.2:8080"; //CHANGE THIS TO WHERE THE CUSTOM BACKEND IS RUNNING
+        url = "https://mcc-fall-2017-g04.appspot.com"; //CHANGE THIS TO WHERE THE CUSTOM BACKEND IS RUNNING
 
 
         ActionBar actionBar = getSupportActionBar();
