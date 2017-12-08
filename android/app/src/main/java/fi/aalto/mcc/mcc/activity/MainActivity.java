@@ -692,6 +692,7 @@ public class MainActivity extends AppCompatActivity
                     if( data.getKey().equals(NAME_CHILD)  && data.getValue() != null )  myName = data.getValue().toString();
                     if( data.getKey().equals(PHOTO_CHILD) && data.getValue() != null)   myPhotoUrl = data.getValue().toString();
                     if( data.getKey().equals(EMAIL_CHILD) && data.getValue() != null)   myEmail = data.getValue().toString();
+                    if( data.getKey().equals(USERS_CHILD) && data.getValue() != null)   myGroup = data.getValue().toString();
                 }
 
                 ImageView mPhoto =  (ImageView)findViewById(R.id.imageUserPhoto);
@@ -702,7 +703,31 @@ public class MainActivity extends AppCompatActivity
                 mName.setText(myName);
                 mEmail.setText(myEmail);
 
+                addGroupListener(myGroup);
                 privateAlbum = createPrivateAlbum();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Snackbar.make(getCurrentFocus(), "Failed to read user information: " +  error.toException(), Snackbar.LENGTH_LONG).setAction("Notification", null).show();
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    /*
+    public void addUserGroupValueListener() {
+
+        if (mUser.getUid() == null) return;
+
+        mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if( snapshot.getValue() != null) {
+                    myGroup = snapshot.getValue().toString();
+                    addGroupListener(myGroup);
+                }
             }
 
             @Override
@@ -711,7 +736,7 @@ public class MainActivity extends AppCompatActivity
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
-    }
+    }*/
 
 
     public void addGroupListener(String myGroupValue) {
@@ -772,6 +797,7 @@ public class MainActivity extends AppCompatActivity
                         }
                         GalleryObject obj = new GalleryObject(data.getKey(), map);
                         for (int i = 0; i < albumList.size(); i++) {
+                            String  s = albumList.get(i).getId();
                             if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(myGroup)) {
                                 albumList.get(i).add(obj);
                                 lastAdded = obj;
@@ -779,7 +805,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                     if (lastAdded != null && initDone) {
-                        Snackbar.make(getCurrentFocus(), "User " + lastAdded.getAuthor() + " posted a new image.", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                        Snackbar.make(getCurrentFocus(), "User " + lastAdded.getAuthor() + " posted a new image.", Snackbar.LENGTH_LONG).setAction("Notification", null).show();
                     }
                     adapter.notifyDataSetChanged();
                     initDone = true;
@@ -807,7 +833,7 @@ public class MainActivity extends AppCompatActivity
                         addUserNameValueListenerEx();
 
                         // initialize primary data listeners in order
-                        addUserGroupValueListener();
+                        //addUserGroupValueListener();
                     }
 
                     // get id token
@@ -913,25 +939,7 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    public void addUserGroupValueListener() {
-        if (mUser.getUid() == null) return;
 
-        mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if( snapshot.getValue() != null) {
-                    myGroup = snapshot.getValue().toString();
-                    addGroupListener(myGroup);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-        });
-    }
 }
 
 /* ======================================================== NOT IN USE ======================================================== */
