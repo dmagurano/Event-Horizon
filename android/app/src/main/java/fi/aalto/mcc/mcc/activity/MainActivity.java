@@ -386,7 +386,7 @@ public class MainActivity extends AppCompatActivity
 
     public class startPhotoUpload extends AsyncTask<Void, Void, String> {
 
-        private ProgressDialog busy = new ProgressDialog(MainActivity.this);
+        //private ProgressDialog busy = new ProgressDialog(MainActivity.this);
 
         protected void onPreExecute() {
             super.onPreExecute();
