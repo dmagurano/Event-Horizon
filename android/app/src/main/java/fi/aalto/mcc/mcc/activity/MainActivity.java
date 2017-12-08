@@ -692,7 +692,7 @@ public class MainActivity extends AppCompatActivity
                     if( data.getKey().equals(NAME_CHILD)  && data.getValue() != null )  myName = data.getValue().toString();
                     if( data.getKey().equals(PHOTO_CHILD) && data.getValue() != null)   myPhotoUrl = data.getValue().toString();
                     if( data.getKey().equals(EMAIL_CHILD) && data.getValue() != null)   myEmail = data.getValue().toString();
-                    if( data.getKey().equals(USERS_CHILD) && data.getValue() != null)   myGroup = data.getValue().toString();
+                    if( data.getKey().equals(GROUP_CHILD) && data.getValue() != null)   myGroup = data.getValue().toString();
                 }
 
                 ImageView mPhoto =  (ImageView)findViewById(R.id.imageUserPhoto);
