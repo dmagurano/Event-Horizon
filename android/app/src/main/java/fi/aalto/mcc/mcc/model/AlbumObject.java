@@ -84,9 +84,9 @@ public class AlbumObject implements Serializable {
     }
 
 
-    public void add(GalleryObject obj)
+    public int add(GalleryObject obj)
     {
-        if (obj == null) return;
+        if (obj == null) return -1;
 
         // check if already exists and update data
         if(obj.getId() != null && obj.getId() != "") {
@@ -94,12 +94,13 @@ public class AlbumObject implements Serializable {
 
                 if (listObjects.get(i).getId().equals(obj.getId())) {
                     listObjects.get(i).update(obj);
-                    return;
+                    return 0;
                 }
             }
         }
         // add new object
         listObjects.add(0,obj);
+        return 1;
     }
 
 

@@ -720,27 +720,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    /*
-    public void addUserGroupValueListener() {
-
-        if (mUser.getUid() == null) return;
-
-        mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if( snapshot.getValue() != null) {
-                    myGroup = snapshot.getValue().toString();
-                    addGroupListener(myGroup);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-        });
-    }*/
 
 
     public void addGroupListener(String myGroupValue) {
@@ -804,8 +783,8 @@ public class MainActivity extends AppCompatActivity
                         for (int i = 0; i < albumList.size(); i++) {
                             String  s = albumList.get(i).getId();
                             if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(myGroup)) {
-                                albumList.get(i).add(obj);
-                                lastAdded = obj;
+                                int isNew = albumList.get(i).add(obj);
+                                if (isNew>0) lastAdded = obj;
                             }
                         }
                     }
