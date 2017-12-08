@@ -99,6 +99,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.net.Uri;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.vision.Frame;
@@ -123,20 +124,18 @@ public class MainActivity extends AppCompatActivity
     public static final int MEDIA_REQUEST_CODE  = 2;
     public static final int RECORD_REQUEST_CODE = 3;
 
-    public static final int FILE_UNCLASSIFIED = 1;
-    public static final int FILE_CLASSIFIED = 2;
+    public static final int FILE_UNCLASSIFIED   = 1;
+    public static final int FILE_CLASSIFIED     = 2;
 
-    public static final String DIR_CLASSIFIED = "/PrivateFiles";
+    public static final String DIR_CLASSIFIED   = "/PrivateFiles";
     public static final String DIR_UNCLASSIFIED = "/Unprocessed";
-    public static final String DIR_DATA = "/Android/data/";
-
-    private String TAG = GalleryActivity.class.getSimpleName();
-
-    public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
+    public static final String DIR_DATA         = "/Android/data/";
 
     public static final String IMAGES_CHILD = "Images";
     public static final String GROUP_CHILD  = "group";
     public static final String NAME_CHILD   = "name";
+    public static final String PHOTO_CHILD  = "photo";
+    public static final String EMAIL_CHILD  = "e-mail";
     public static final String GROUPS_CHILD = "Groups";
     public static final String USERS_CHILD  = "Users";
 
@@ -147,28 +146,32 @@ public class MainActivity extends AppCompatActivity
     public static final String UPLOAD_FORM_FILE_NAME  = "file.jpg";
     public static final String UPLOAD_FORM_MIME       = "image/jpeg";
 
+    private String TAG = GalleryActivity.class.getSimpleName();
 
-    private FirebaseAuth.AuthStateListener mAuthListener;
-    private FirebaseAuth mAuth;
-    private DatabaseReference mDatabase = null, mGroupRef = null, mImageRef = null;
-    private  ValueEventListener valueListenerGroup = null, valueListenerImage = null;
-    private FirebaseUser mUser;
-    private FirebaseRemoteConfig mRemoteConfig;
+    public static String uploadURL = "https://mcc-fall-2017-g04.appspot.com/upload";
 
+    BarcodeDetector                 barcodeDetector;
+    static Uri                      uriPhotoFileTarget;
+    byte[]                          bytePhotoUploadTarget;
 
-    BarcodeDetector barcodeDetector;
-
-    static Uri uriPhotoFileTarget;
-    byte[] bytePhotoUploadTarget;
-
-    String myID;
-    String myGroup;
-    String myName;
+    String                          myID;
+    String                          myGroup;
+    String                          myName;
+    String                          myPhotoUrl;
+    String                          myEmail;
 
     private RecyclerView            recyclerView;
     private AlbumViewAdapter        adapter;
     private ArrayList<AlbumObject>  albumList;
     private AlbumObject             privateAlbum;
+
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase = null, mGroupRef = null, mImageRef = null;
+    private ValueEventListener valueListenerGroup = null, valueListenerImage = null;
+    private FirebaseUser mUser;
+    private FirebaseRemoteConfig mRemoteConfig;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -257,7 +260,7 @@ public class MainActivity extends AppCompatActivity
                         .build();
 
         // initialize user name and load images from private folder
-        addUserNameValueListener();
+        addUserNameValueListenerEx();
 
         // initialize primary data listeners in order
         addUserGroupValueListener();
@@ -276,7 +279,6 @@ public class MainActivity extends AppCompatActivity
             return;
         } else {
 
-
             final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
             File photoFile = getOutputMediaFile(FILE_UNCLASSIFIED);
@@ -289,18 +291,10 @@ public class MainActivity extends AppCompatActivity
 
             startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
 
-
-            // Below code used for media selector for testing purposes (SM)
-            // Intent intent = new Intent();
-            // intent.setType("image/*");
-            // intent.setAction(Intent.ACTION_GET_CONTENT);
-            // startActivityForResult(Intent.createChooser(intent, "Select an image"), MEDIA_REQUEST_CODE);
         }
 
 
     }
-
-
 
 
 
@@ -562,7 +556,6 @@ public class MainActivity extends AppCompatActivity
 
                 startActivity(i);
             }
-        } else if (id == R.id.nav_account) {
 
         } else if (id == R.id.nav_settings) {
 
@@ -702,6 +695,36 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    public void addUserNameValueListenerEx() {
+        mDatabase.child(USERS_CHILD).child(mUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    if( data.getKey().equals(NAME_CHILD))  myName = data.getValue().toString();
+                    if( data.getKey().equals(PHOTO_CHILD)) myPhotoUrl = data.getValue().toString();
+                    if( data.getKey().equals(EMAIL_CHILD)) myEmail = data.getValue().toString();
+                }
+
+                ImageView mPhoto =  (ImageView)findViewById(R.id.imageUserPhoto);
+                TextView  mName  =  (TextView) findViewById(R.id.textUserName);
+                TextView  mEmail =  (TextView) findViewById(R.id.textUserEmail);
+
+                //mPhoto.setImageResource(R.drawable.user);
+                mName.setText(myName);
+                mEmail.setText(myEmail);
+
+                privateAlbum = createPrivateAlbum();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+
     public void addUserGroupValueListener() {
         mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
             @Override
@@ -725,7 +748,7 @@ public class MainActivity extends AppCompatActivity
         // sanity check for valid group key
         if( myGroupValue== null || myGroupValue.equals("")) return;
 
-        // cancel previous listener if already exists
+        // cancel previous listener
         if (mGroupRef != null && valueListenerGroup != null) mGroupRef.removeEventListener(valueListenerGroup);
 
         // add new listener
@@ -760,7 +783,7 @@ public class MainActivity extends AppCompatActivity
 
         if(myGroupValue != null && !myGroupValue.equals("")) {
 
-            // cancel previous listener if already exists
+            // cancel previous listener
             if (mImageRef != null && valueListenerImage != null) mImageRef.removeEventListener(valueListenerImage);
 
             // add new listener
