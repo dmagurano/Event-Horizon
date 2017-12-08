@@ -781,7 +781,6 @@ public class MainActivity extends AppCompatActivity
                         }
                         GalleryObject obj = new GalleryObject(data.getKey(), map);
                         for (int i = 0; i < albumList.size(); i++) {
-                            String  s = albumList.get(i).getId();
                             if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(myGroup)) {
                                 int isNew = albumList.get(i).add(obj);
                                 if (isNew>0) lastAdded = obj;
