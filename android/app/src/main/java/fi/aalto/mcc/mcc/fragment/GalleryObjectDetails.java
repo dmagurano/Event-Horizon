@@ -10,6 +10,8 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -38,10 +40,11 @@ public class GalleryObjectDetails extends DialogFragment {
     private ViewPager viewPager;
     private CustomViewPagerAdapter viewPagerAdapter;
     private TextView labelCount;
+    private ImageView buttonShare, buttonBack;
+    private TextView buttonShareTouch, buttonBackTouch;
     private int selectedPosition = 0;
     private Connectivity cm;
-    int syncLAN = 1;
-    int syncWAN = 1;
+    int syncLAN = 1, syncWAN = 1;
 
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageReference = storage.getReference();
@@ -58,6 +61,44 @@ public class GalleryObjectDetails extends DialogFragment {
         viewPager = (ViewPager) v.findViewById(R.id.viewpager);
         labelCount = (TextView) v.findViewById(R.id.labelcount);
 
+        buttonBack  = (ImageView) v.findViewById(R.id.backButton);
+        buttonShare = (ImageView) v.findViewById(R.id.shareButton);
+
+        buttonBackTouch  = (TextView) v.findViewById(R.id.backButtonTouchArea);
+        buttonShareTouch = (TextView) v.findViewById(R.id.shareButtonTouchArea);
+
+
+        buttonBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OnBackButton(view);
+            }
+        });
+
+
+        buttonBackTouch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OnBackButton(view);
+            }
+        });
+
+        buttonShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OnShareButton(view);
+            }
+        });
+
+        buttonShareTouch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OnShareButton(view);
+            }
+        });
+
+
+
         listObjects = (ArrayList<GalleryObject>) getArguments().getSerializable("images");
         selectedPosition = getArguments().getInt("position");
 
@@ -71,11 +112,30 @@ public class GalleryObjectDetails extends DialogFragment {
         int syncLAN = Integer.parseInt(sharedPref.getString("sync_quality_lan","1"));
         int syncWAN = Integer.parseInt(sharedPref.getString("sync_quality_wan","1"));
 
+
+
         setCurrentItem(selectedPosition);
 
 
         return v;
     }
+
+
+    public void OnBackButton(View v)
+    {
+        //super.onBackPressed();
+        dismiss();
+    }
+
+
+    public void OnShareButton(View v)
+    {
+
+        return;
+
+    }
+
+
 
     private void setCurrentItem(int position) {
 
