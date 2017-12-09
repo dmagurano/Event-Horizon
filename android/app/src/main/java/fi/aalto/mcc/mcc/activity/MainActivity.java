@@ -218,13 +218,17 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onClick(View view, int position) {
-                AlbumObject obj = albumList.get(position);
 
-                Intent intent = new Intent(MainActivity.this, GalleryActivity.class);
+                if (albumList != null && position >=0 && albumList.size() > position ) {
+                    AlbumObject obj = albumList.get(position);
+                    if (obj == null) return;
 
-                if (intent != null && obj != null) {
-                    intent.putExtra("album", obj);
-                    startActivity(intent);
+                    Intent intent = new Intent(MainActivity.this, GalleryActivity.class);
+
+                    if (intent != null && obj != null) {
+                        intent.putExtra("album", obj);
+                        startActivity(intent);
+                    }
                 }
 
             }
@@ -234,7 +238,6 @@ public class MainActivity extends AppCompatActivity
 
             }
         }));
-
 
         // add camera button to main view
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -291,6 +294,21 @@ public class MainActivity extends AppCompatActivity
         }
 
 
+    }
+
+
+    public void OnGroupButton(View v)
+    {
+        Intent i = new Intent(MainActivity.this, GroupManagementActivity.class);
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        if (user != null)
+        {
+            String uid = mAuth.getCurrentUser().getUid();
+            String group_id = mDatabase.child(USERS_CHILD).child(uid).child(GROUP_CHILD).toString();
+            i.putExtra("USER_IN_GROUP", group_id != null);
+            startActivity(i);
+        }
     }
 
 
@@ -352,7 +370,12 @@ public class MainActivity extends AppCompatActivity
 
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            if (value > 0) savePhotoToPrivateFolder( bitmap );      // <-- save to private folder
+            if (value > 0)
+            {
+                savePhotoToPrivateFolder(bitmap);                   // <-- save to private folder
+                //Snackbar.make(getCurrentFocus(),
+                //        "New image was added to Private album.", Snackbar.LENGTH_LONG);
+            }
             else uploadPhotoToServer( bitmap );                     // <-- publish to server
             busy.hide();
             busy.dismiss();
@@ -363,7 +386,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public int doPhotoClasssification(Bitmap bitmap) {
-        if (!barcodeDetector.isOperational())
+        if (!barcodeDetector.isOperational() || bitmap == null)
         {
             return -1;
         }
@@ -528,7 +551,10 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            return true;
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            if (intent != null) {
+                startActivity(intent);
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -544,17 +570,9 @@ public class MainActivity extends AppCompatActivity
             OnPhotoButton(this.getCurrentFocus());
         } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_group) {
-            Intent i = new Intent(MainActivity.this, GroupManagementActivity.class);
-            FirebaseUser user = mAuth.getCurrentUser();
-            if (user != null) {
-                String uid = mAuth.getCurrentUser().getUid();
-                String group_id = mDatabase.child(USERS_CHILD).child(uid).child(GROUP_CHILD).toString();
-
-                i.putExtra("USER_IN_GROUP", group_id != null);
-
-                startActivity(i);
-            }
+        } else if (id == R.id.nav_group)
+        {
+            OnGroupButton(this.getCurrentFocus());
 
         } else if (id == R.id.nav_settings) {
 
@@ -699,6 +717,36 @@ public class MainActivity extends AppCompatActivity
                 TextView  mName  =  (TextView) findViewById(R.id.textUserName);
                 TextView  mEmail =  (TextView) findViewById(R.id.textUserEmail);
 
+
+                // adjust default action to accordingly (camera when user is in group, otherwise join group)
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
+                if (myGroup == null || myGroup.equals(""))
+                {
+
+                    fab.setImageResource(R.drawable.join_group);
+                    fab.invalidate();
+
+                    fab.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            OnGroupButton(view);
+                        }
+                    });
+                } else {
+                    fab.setImageResource(R.drawable.camera);
+                    fab.invalidate();
+
+                    fab.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            OnPhotoButton(view);
+                        }
+                    });
+
+                }
+
+
                 //mPhoto.setImageResource(R.drawable.user);
                 mName.setText(myName);
                 mEmail.setText(myEmail);
@@ -716,27 +764,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    /*
-    public void addUserGroupValueListener() {
-
-        if (mUser.getUid() == null) return;
-
-        mDatabase.child(USERS_CHILD).child(mUser.getUid()).child(GROUP_CHILD).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if( snapshot.getValue() != null) {
-                    myGroup = snapshot.getValue().toString();
-                    addGroupListener(myGroup);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-        });
-    }*/
 
 
     public void addGroupListener(String myGroupValue) {
@@ -798,10 +825,9 @@ public class MainActivity extends AppCompatActivity
                         }
                         GalleryObject obj = new GalleryObject(data.getKey(), map);
                         for (int i = 0; i < albumList.size(); i++) {
-                            String  s = albumList.get(i).getId();
                             if (albumList.get(i).getId() != null && albumList.get(i).getId().equals(myGroup)) {
-                                albumList.get(i).add(obj);
-                                lastAdded = obj;
+                                int isNew = albumList.get(i).add(obj);
+                                if (isNew>0) lastAdded = obj;
                             }
                         }
                     }
