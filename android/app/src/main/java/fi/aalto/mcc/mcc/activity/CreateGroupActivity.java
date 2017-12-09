@@ -1,18 +1,25 @@
 package fi.aalto.mcc.mcc.activity;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +58,8 @@ public class CreateGroupActivity extends AppCompatActivity {
     private String url;
     private Long millis;
 
+    private ProgressBar mSpinner;
+
     private OkHttpClient client;
 
 
@@ -58,10 +67,17 @@ public class CreateGroupActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_group);
-        mDisplayDate = (TextView) findViewById(R.id.expireDate);
+
+        setupUI(findViewById(R.id.createGroupPage));
+
+        mDisplayDate = (EditText) findViewById(R.id.expireDate);
         mGroupName = (EditText) findViewById(R.id.CreateGroupName);
         mDisplayDate.setInputType(InputType.TYPE_NULL);
+        mDisplayDate.setFocusable(false);
         mCreateBtn = (Button) findViewById(R.id.createGroupBtn);
+        mSpinner = (ProgressBar) findViewById(R.id.progressBar1);
+
+        mSpinner.setVisibility(View.GONE);
 
         client = new OkHttpClient();
 
@@ -116,8 +132,23 @@ public class CreateGroupActivity extends AppCompatActivity {
         mCreateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 String groupName = mGroupName.getText().toString();
                 String date_str = mDisplayDate.getText().toString();
+
+                if(groupName.length() == 0){
+                    Toast.makeText(CreateGroupActivity.this, R.string.ng_groupName_missing,
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }else if(date_str.length() == 0){
+                    Toast.makeText(CreateGroupActivity.this, R.string.ng_expireDate_missing,
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                mSpinner.setVisibility(View.VISIBLE);
+
+
 
                 SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 
@@ -151,6 +182,9 @@ public class CreateGroupActivity extends AppCompatActivity {
                             .build();
 
                     client.newCall(request).enqueue(new Callback() {
+
+                        Handler handler = new Handler(CreateGroupActivity.this.getMainLooper());
+
                         @Override
                         public void onFailure(Call call, IOException e) {
                             call.cancel();
@@ -158,8 +192,15 @@ public class CreateGroupActivity extends AppCompatActivity {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            final Response res = response;
-                            CreateGroupActivity.this.finish();
+
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mSpinner.setVisibility(View.GONE);
+                                    CreateGroupActivity.this.finish();
+                                }
+                            });
+
                         }
                     });
 
@@ -173,6 +214,33 @@ public class CreateGroupActivity extends AppCompatActivity {
         });
 
     }
+
+    public void setupUI(View view) {
+
+        // Set up touch listener for non-text box views to hide keyboard.
+        if (!(view instanceof EditText)) {
+            view.setOnTouchListener(new View.OnTouchListener() {
+                public boolean onTouch(View v, MotionEvent event) {
+                    View view = CreateGroupActivity.this.getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+                    return false;
+                }
+            });
+        }
+
+        //If a layout container, iterate over children and seed recursion.
+        if (view instanceof ViewGroup) {
+            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+                View innerView = ((ViewGroup) view).getChildAt(i);
+                setupUI(innerView);
+            }
+        }
+    }
+
+
 
 
 }

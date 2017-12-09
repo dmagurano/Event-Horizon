@@ -38,12 +38,16 @@
     <string name="noGroup_text">You are not in any group</string>
     <string name="joinBtn_text">Join a group</string>
     <string name="createBtn_text">Create a group</string>
+    <string name="delete_dialog">Are you sure you want to delete the group?</string>
+    <string name="leave_dialog">Are you sure you want to leave the group?</string>
 
     <string name="create_group_title">NEW GROUP</string>
     <string name="ng_name_title">Group name:</string>
     <string name="ng_expiration_title">Group expires:</string>
     <string name="ng_name_hint">Enter group name</string>
     <string name="ng_createBtn_text">Create group</string>
+    <string name="ng_groupName_missing">Please enter name for the group</string>
+    <string name="ng_expireDate_missing">Please enter expiration date for the group</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

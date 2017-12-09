@@ -1,14 +1,20 @@
 package fi.aalto.mcc.mcc.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -29,11 +35,14 @@ public class LoginActivity extends AppCompatActivity {
     private Button mSignupBtn;
     private EditText mEmailInput;
     private EditText mPasswdInput;
+    private ProgressBar mSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        setupUI(findViewById(R.id.loginPage));
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -41,6 +50,10 @@ public class LoginActivity extends AppCompatActivity {
         mSignupBtn = (Button) findViewById(R.id.signupBtn);
         mEmailInput = (EditText) findViewById(R.id.emailInput);
         mPasswdInput = (EditText) findViewById(R.id.passwdInput);
+
+        mSpinner = (ProgressBar) findViewById(R.id.progressBar1);
+        mSpinner.setVisibility(View.GONE);
+
 
         mLoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,10 +78,17 @@ public class LoginActivity extends AppCompatActivity {
         String passwd = mPasswdInput.getText().toString().trim();
 
         if(!TextUtils.isEmpty(email) && !TextUtils.isEmpty(passwd)){
+
+            mSpinner.setVisibility(View.VISIBLE);
+
+
             mAuth.signInWithEmailAndPassword(email, passwd)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
+
+                            Handler handler = new Handler(LoginActivity.this.getMainLooper());
+
                             Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
 
                             if (task.isSuccessful()) {
@@ -82,8 +102,40 @@ public class LoginActivity extends AppCompatActivity {
                                 Toast.makeText(LoginActivity.this, R.string.auth_failed,
                                         Toast.LENGTH_SHORT).show();
                             }
+
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mSpinner.setVisibility(View.GONE);
+                                }
+                            });
                         }
                     });
+        }
+    }
+
+    public void setupUI(View view) {
+
+        // Set up touch listener for non-text box views to hide keyboard.
+        if (!(view instanceof EditText)) {
+            view.setOnTouchListener(new View.OnTouchListener() {
+                public boolean onTouch(View v, MotionEvent event) {
+                    View view = LoginActivity.this.getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+                    return false;
+                }
+            });
+        }
+
+        //If a layout container, iterate over children and seed recursion.
+        if (view instanceof ViewGroup) {
+            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+                View innerView = ((ViewGroup) view).getChildAt(i);
+                setupUI(innerView);
+            }
         }
     }
 }

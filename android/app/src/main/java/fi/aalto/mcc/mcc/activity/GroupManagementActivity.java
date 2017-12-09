@@ -1,11 +1,15 @@
 package fi.aalto.mcc.mcc.activity;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.Image;
+import android.os.Handler;
 import android.provider.ContactsContract;
+import android.renderscript.Sampler;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.ActionBar;
@@ -19,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
@@ -60,6 +65,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.internal.cache.DiskLruCache;
 
 
 public class GroupManagementActivity extends AppCompatActivity {
@@ -70,6 +76,8 @@ public class GroupManagementActivity extends AppCompatActivity {
     private FirebaseUser mUser;
     private DatabaseReference mUserDatabase;
     private DatabaseReference mGroupDatabase;
+    private ValueEventListener mEventListener;
+    private ValueEventListener mGroupEventListener;
     private Button mLeaveBtn;
     private Button mJoinBtn;
     private Button mCreateBtn;
@@ -77,11 +85,14 @@ public class GroupManagementActivity extends AppCompatActivity {
     private TextView mGroupName;
     private TextView mGroupExpiration;
     private ListView mGroupMembers;
+    private ProgressBar mSpinner;
 
     private OkHttpClient client;
     private String idToken;
     private JSONObject json;
     private String url;
+
+    private Integer dialog_msg;
 
     private ConstraintLayout no_group;
     private ConstraintLayout yes_group;
@@ -108,6 +119,10 @@ public class GroupManagementActivity extends AppCompatActivity {
         mGroupExpiration = (TextView) findViewById(R.id.groupExpiration_text);
         mGroupMembers = (ListView) findViewById(R.id.membersList);
 
+
+        mSpinner = (ProgressBar) findViewById(R.id.progressBar1);
+        mSpinner.setVisibility(View.GONE);
+
         client = new OkHttpClient();
         url = "https://mcc-fall-2017-g04.appspot.com"; //CHANGE THIS TO WHERE THE CUSTOM BACKEND IS RUNNING
 
@@ -119,8 +134,10 @@ public class GroupManagementActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Group Management");
         }
 
-        // Read from the user database
-        mUserDatabase.child(mUser.getUid()).addValueEventListener(new ValueEventListener() {
+
+
+
+        mEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 user_obj = dataSnapshot.getValue(UserObject.class);
@@ -148,13 +165,20 @@ public class GroupManagementActivity extends AppCompatActivity {
 
                 if(USER_IN_GROUP){
                     yes_group.setVisibility(View.VISIBLE);
-                    mGroupDatabase.child(user_obj.getGroup()).addValueEventListener(new ValueEventListener() {
+                    mGroupEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             group_obj = dataSnapshot.getValue(GroupObject.class);
 
                             mGroupName.setText(group_obj.getName());
 
+                            if(group_obj.getAdmin().equals(mUser.getUid())){
+                                mLeaveBtn.setText(R.string.deleteBtn_text);
+                                dialog_msg = R.string.delete_dialog;
+                            }else{
+                                mLeaveBtn.setText(R.string.leaveBtn_text);
+                                dialog_msg = R.string.leave_dialog;
+                            }
                             Date date = new Date(group_obj.getExpirationDate());
                             Log.d(TAG, Long.toString(group_obj.getExpirationDate()));
                             DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
@@ -197,7 +221,11 @@ public class GroupManagementActivity extends AppCompatActivity {
                             // Failed to read value
                             Log.w(TAG, "Failed to read value.", error.toException());
                         }
-                    });
+                    };
+
+                    //The group event listener is added here and it's not needed to add it separately in onStart() or onResume() (this way we ensure that we have user_obj)
+
+                    mGroupDatabase.child(user_obj.getGroup()).addValueEventListener(mGroupEventListener);
                 }else{
                     no_group.setVisibility(View.VISIBLE);
                 }
@@ -211,11 +239,14 @@ public class GroupManagementActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
+            public void onCancelled(DatabaseError databaseError) {
                 // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
+                Log.d(TAG, "mUser uid: " + mUser.getUid());
+                Log.d(TAG, "Auth uid: " + FirebaseAuth.getInstance().getCurrentUser().getUid());
+                Log.w(TAG, "Failed to read value.", databaseError.toException());
             }
-        });
+        };
+
 
 
 
@@ -235,7 +266,6 @@ public class GroupManagementActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                //TODO: add group joining functionality here
                 Intent rIntent = new Intent(GroupManagementActivity.this, ReaderActivity.class);
                 rIntent.putExtra("ID_TOKEN", idToken);
                 rIntent.putExtra("URL", url);
@@ -247,7 +277,9 @@ public class GroupManagementActivity extends AppCompatActivity {
         mInviteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if(user_obj == null){
+                    return;
+                }
                 mGroupDatabase.child(user_obj.getGroup()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -309,51 +341,101 @@ public class GroupManagementActivity extends AppCompatActivity {
         mLeaveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-                json = new JSONObject();
-                try {
-                    json.put("idToken", idToken);
-                    json.put("groupId", user_obj.getGroup());
 
-                    RequestBody body = RequestBody.create(JSON, json.toString());
-
-                    Request request = new Request.Builder()
-                            .url(url+"/leave")
-                            .post(body)
-                            .build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-
-                            call.cancel();
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            final Response res = response;
-                            GroupManagementActivity.this.runOnUiThread(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    try {
-                                        Toast.makeText(GroupManagementActivity.this, res.body().string(), Toast.LENGTH_SHORT).show();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
-
-                        }
-                    });
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
+                new AlertDialog.Builder(GroupManagementActivity.this)
+                        .setMessage(dialog_msg)
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                leaveGroup();
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                return;
+                            }
+                        })
+                        .show();
             }
         });
 
+    }
+
+    protected void leaveGroup(){
+
+        mSpinner.setVisibility(View.VISIBLE);
+
+
+        final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        json = new JSONObject();
+        try {
+            json.put("idToken", idToken);
+            json.put("groupId", user_obj.getGroup());
+
+            RequestBody body = RequestBody.create(JSON, json.toString());
+
+            Request request = new Request.Builder()
+                    .url(url+"/leave")
+                    .post(body)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                Handler handler = new Handler(GroupManagementActivity.this.getMainLooper());
+
+
+                @Override
+                public void onFailure(Call call, IOException e) {
+
+                    call.cancel();
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSpinner.setVisibility(View.GONE);
+                        }
+                    });
+
+                    final Response res = response;
+                    GroupManagementActivity.this.runOnUiThread(new Runnable()
+                    {
+                        public void run()
+                        {
+                            try {
+                                Toast.makeText(GroupManagementActivity.this, res.body().string(), Toast.LENGTH_SHORT).show();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+
+
+                }
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    @Override
+    public void onStop() {
+        mUserDatabase.child(mUser.getUid()).removeEventListener(mEventListener);
+        if(mGroupEventListener != null && user_obj.getGroup() != null){
+            mGroupDatabase.child(user_obj.getGroup()).removeEventListener(mGroupEventListener);
+        }
+        super.onStop();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mUserDatabase.child(mUser.getUid()).addValueEventListener(mEventListener);
     }
 
 
