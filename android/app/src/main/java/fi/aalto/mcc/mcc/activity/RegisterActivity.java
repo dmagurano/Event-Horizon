@@ -2,6 +2,7 @@ package fi.aalto.mcc.mcc.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
@@ -39,6 +40,8 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText mPasswdConfirmInput;
     private Button mRegisterBtn;
 
+    private SharedPreferences prefs;
+
     private ProgressBar mSpinner;
 
     @Override
@@ -57,6 +60,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         mSpinner = (ProgressBar) findViewById(R.id.progressBar1);
         mSpinner.setVisibility(View.GONE);
+
+        prefs = getSharedPreferences("fi.aalto.mcc.mcc", MODE_PRIVATE);
+
 
         setupUI(findViewById(R.id.registerPage));
 
@@ -129,6 +135,10 @@ public class RegisterActivity extends AppCompatActivity {
                                         mSpinner.setVisibility(View.GONE);
                                     }
                                 });
+
+                                prefs.edit().putBoolean("firstTimeUser_"+uid, true).commit();
+                                Log.d(TAG, uid + " " + Boolean.toString(prefs.getBoolean("firstTimeUser_"+uid,false)));
+
                                 Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
                                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 startActivity(i);

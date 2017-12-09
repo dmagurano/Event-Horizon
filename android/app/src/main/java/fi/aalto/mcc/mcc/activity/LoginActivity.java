@@ -2,6 +2,7 @@ package fi.aalto.mcc.mcc.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import fi.aalto.mcc.mcc.R;
 
@@ -31,11 +34,14 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private String TAG = "Login";
 
+    SharedPreferences prefs = null;
+
     private Button mLoginBtn;
     private Button mSignupBtn;
     private EditText mEmailInput;
     private EditText mPasswdInput;
     private ProgressBar mSpinner;
+    private DatabaseReference mUserDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +57,12 @@ public class LoginActivity extends AppCompatActivity {
         mEmailInput = (EditText) findViewById(R.id.emailInput);
         mPasswdInput = (EditText) findViewById(R.id.passwdInput);
 
+        mUserDatabase = FirebaseDatabase.getInstance().getReference("Users");
+
         mSpinner = (ProgressBar) findViewById(R.id.progressBar1);
         mSpinner.setVisibility(View.GONE);
+
+        prefs = getSharedPreferences("fi.aalto.mcc.mcc", MODE_PRIVATE);
 
 
         mLoginBtn.setOnClickListener(new View.OnClickListener() {
@@ -95,8 +105,19 @@ public class LoginActivity extends AppCompatActivity {
                                 Log.d(TAG, "signInWithEmail:success");
                                 FirebaseUser user = mAuth.getCurrentUser();
                                 Log.d(TAG, user.getUid());
-                                Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                                startActivity(i);
+
+                                Log.d(TAG, user.getUid() + " " + Boolean.toString(prefs.getBoolean("firstTimeUser_"+user.getUid(),false)));
+
+                                if(prefs.getBoolean("firstTimeUser_"+user.getUid(), false)){
+
+                                    Intent i = new Intent(LoginActivity.this, WelcomeActivity.class);
+                                    startActivity(i);
+
+                                    prefs.edit().putBoolean("firstTimeUser_"+user.getUid(), false).commit();
+                                }else {
+                                    Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                                    startActivity(i);
+                                }
                             }else{
                                 Log.w(TAG, "signInWithEmail:failed", task.getException());
                                 Toast.makeText(LoginActivity.this, R.string.auth_failed,

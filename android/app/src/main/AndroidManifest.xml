@@ -58,17 +58,18 @@
             android:label="@string/title_activity_settings" />
         <activity android:name=".activity.ReaderActivity" />
 
-        <service
-            android:name=".service.NotificationService">
+        <service android:name=".service.NotificationService">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
         <service android:name=".service.FirebaseIDService">
             <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
+
+        <activity android:name=".activity.WelcomeActivity"></activity>
     </application>
 
 </manifest>
