@@ -117,8 +117,8 @@ public class GroupManagementActivity extends AppCompatActivity {
         mCreateBtn = (Button) findViewById(R.id.createBtn);
         mJoinBtn = (Button) findViewById(R.id.joinBtn);
 
-        mGroupName = (TextView) findViewById(R.id.groupName_text);
-        mGroupExpiration = (TextView) findViewById(R.id.groupExpiration_text);
+        mGroupName = (TextView) findViewById(R.id.txtGroupName);
+        mGroupExpiration = (TextView) findViewById(R.id.txtGroupExpirity);
         mGroupMembers = (ListView) findViewById(R.id.membersList);
 
 
@@ -133,7 +133,7 @@ public class GroupManagementActivity extends AppCompatActivity {
         if (actionBar != null) {
             // Show the Up button in the action bar.
             actionBar.setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Event Management");
+            getSupportActionBar().setTitle("Event Information");
         }
 
 
@@ -186,7 +186,7 @@ public class GroupManagementActivity extends AppCompatActivity {
                             DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
 
 
-                            mGroupExpiration.setText(dateFormat.format(date));
+                            mGroupExpiration.setText("Valid untill "+ dateFormat.format(date));
 
 
                             final Map<String, Object> members = group_obj.getMembers();
