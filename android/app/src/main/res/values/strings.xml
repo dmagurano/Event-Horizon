@@ -35,9 +35,9 @@
     <string name="leaveBtn_text">Leave event</string>
     <string name="deleteBtn_text">Delete event</string>
 
-    <string name="noGroup_text">You are not in any event</string>
-    <string name="joinBtn_text">Join an event</string>
-    <string name="createBtn_text">Create an event</string>
+    <string name="noGroup_text">You are currently not a member of any event group. Please select Join or Create to participate in this new and joyous activity</string>
+    <string name="joinBtn_text">Join an Event</string>
+    <string name="createBtn_text">Create a New Event</string>
     <string name="delete_dialog">Are you sure you want to delete the event?</string>
     <string name="leave_dialog">Are you sure you want to leave the event?</string>
 
