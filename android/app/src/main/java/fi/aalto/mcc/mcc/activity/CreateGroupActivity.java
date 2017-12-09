@@ -102,7 +102,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         if (actionBar != null) {
             // Show the Up button in the action bar.
             actionBar.setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Create New Group");
+            getSupportActionBar().setTitle("Create New Event");
         }
 
         mDisplayDate.setOnClickListener(new View.OnClickListener() {

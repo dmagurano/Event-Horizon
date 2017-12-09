@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import fi.aalto.mcc.mcc.R;
@@ -131,7 +132,7 @@ public class GroupManagementActivity extends AppCompatActivity {
         if (actionBar != null) {
             // Show the Up button in the action bar.
             actionBar.setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Group Management");
+            getSupportActionBar().setTitle("Event Management");
         }
 
 
@@ -181,7 +182,7 @@ public class GroupManagementActivity extends AppCompatActivity {
                             }
                             Date date = new Date(group_obj.getExpirationDate());
                             Log.d(TAG, Long.toString(group_obj.getExpirationDate()));
-                            DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
+                            DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
 
 
                             mGroupExpiration.setText(dateFormat.format(date));
