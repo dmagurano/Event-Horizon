@@ -1,8 +1,12 @@
 package fi.aalto.mcc.mcc.fragment;
 
+import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -11,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.PagerAdapter;
@@ -29,6 +34,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -59,6 +67,7 @@ public class GalleryObjectDetails extends DialogFragment {
 
     public static final String DIR_SHARED       = "/Shared";
     public static final String DIR_DATA         = "/Android/data/";
+    public static final String DIR_PRIVATE      = "/PrivateFiles/";
 
 
     private String TAG = GalleryObjectDetails.class.getSimpleName();
@@ -71,6 +80,7 @@ public class GalleryObjectDetails extends DialogFragment {
     private int selectedPosition = 0;
     private Connectivity cm;
     int syncLAN = 1, syncWAN = 1;
+    ProgressDialog busy;
 
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageReference = storage.getReference();
@@ -92,6 +102,7 @@ public class GalleryObjectDetails extends DialogFragment {
 
         buttonBackTouch  = (TextView) v.findViewById(R.id.backButtonTouchArea);
         buttonShareTouch = (TextView) v.findViewById(R.id.shareButtonTouchArea);
+        busy = new ProgressDialog(getActivity());
 
 
         buttonBack.setOnClickListener(new View.OnClickListener() {
@@ -170,44 +181,52 @@ public class GalleryObjectDetails extends DialogFragment {
 
         // XXX PROBLEM HERE (BELOW)
         try {
-            if (path.startsWith("gs:"))
-                sharedBitmap = Glide.
-                        with(getActivity()).
-                        using(new FirebaseImageLoader()).
-                        load(storage.getReferenceFromUrl(path)).
-                        asBitmap().
-                        into(-1, -1).
-                        get();
-            else {
-                sharedFile = new File(path);
-                uriSharedFile = Uri.fromFile(sharedFile);
-            }
-
-        } catch (final ExecutionException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (final InterruptedException e) {
-            Log.e(TAG, e.getMessage());
-        }
-
-
-        if (uriSharedFile == null && sharedBitmap != null)
-        {
-            sharedFile = saveToFile(sharedBitmap);
-            uriSharedFile = Uri.fromFile(sharedFile);
-            /*
-            // custom file provider not needed ?
-            Uri uriSharedFile = FileProvider.getUriForFile(getActivity().getApplicationContext(),
+            if (path.startsWith("gs:")) {
+                sharedFile = getOutputMediaFile();
+                uriSharedFile = FileProvider.getUriForFile(getActivity().getApplicationContext(),
                         BuildConfig.APPLICATION_ID + ".provider",
                         sharedFile);
-                        */
+
+                final Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("image/jpg");
+                intent.putExtra(Intent.EXTRA_STREAM, uriSharedFile);
+                busy.setMessage("Downloading...");
+                busy.show();
+
+                storage.getReferenceFromUrl(path).getFile(sharedFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        startActivity(Intent.createChooser(intent, "Share"));
+                        busy.hide();
+                        busy.dismiss();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Log.e("Share Image","local temp file not created " +exception.toString());
+                    }
+                });
+
+            }
+            else {
+                String filename = path.split("/")[10];
+                sharedFile = new File(Environment.getExternalStorageDirectory()
+                        + DIR_DATA
+                        + getActivity().getApplicationContext().getPackageName()
+                        + DIR_PRIVATE
+                        + filename);
+                uriSharedFile = FileProvider.getUriForFile(getActivity().getApplicationContext(),
+                        BuildConfig.APPLICATION_ID + ".provider",
+                        sharedFile);
+
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("image/jpg");
+                intent.putExtra(Intent.EXTRA_STREAM, uriSharedFile);
+                startActivity(Intent.createChooser(intent, "Share"));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
         }
-
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("image/jpg");
-        intent.putExtra(Intent.EXTRA_STREAM, uriSharedFile);
-        startActivity(Intent.createChooser(intent, "Share"));
-
-
 
         return;
 
