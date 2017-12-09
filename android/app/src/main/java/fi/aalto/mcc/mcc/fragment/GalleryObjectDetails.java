@@ -154,7 +154,7 @@ public class GalleryObjectDetails extends DialogFragment {
 
 
     public void OnShareButton(View v) {
-        String path = "";
+        String path = null;
         Bitmap sharedBitmap = null;
         File sharedFile = null;
         Uri uriSharedFile = null;

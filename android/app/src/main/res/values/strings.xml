@@ -31,7 +31,7 @@
     <string name="group_name_title">Name:</string>
     <string name="group_expiration_title">Expiration:</string>
     <string name="group_members_title">Members:</string>
-    <string name="inviteBtn_text">Invite</string>
+    <string name="inviteBtn_text">Invite members</string>
     <string name="leaveBtn_text">Leave event</string>
     <string name="deleteBtn_text">Delete event</string>
 
