@@ -51,6 +51,11 @@
     <string name="ng_expireDate_missing">Please enter expiration date for the event</string>
     <string name="ng_expireTime_missing">Please enter expiration time for the event</string>
 
+    <string name="welcome_title">Welcome to use Event Horizon!</string>
+    <string name="welcome_text1">You seem to be new here</string>
+    <string name="welcome_text2">Before you can begin sharing your event photos, we need to hook you up with an event, obviously</string>
+    <string name="get_startedBtn">Get started</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_settings">Settings</string>
