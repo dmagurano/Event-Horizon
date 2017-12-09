@@ -237,6 +237,22 @@ app.post('/upload', multer.single('file'), (req, res) => {
       let file = req.file;
       if (file) {
         processAndUploadImage(file, req.body.groupId, uid).then((success) => {
+          var payload = {
+            notification: {
+              title: "New image added",
+              body: "A new image was added to your group"
+            }
+          };
+          // Send a message to devices subscribed to the provided topic.
+          admin.messaging().sendToTopic(req.body.groupId, payload)
+            .then(function(response) {
+              // See the MessagingTopicResponse reference documentation for the
+              // contents of response.
+              console.log("Successfully sent message:", response);
+            })
+            .catch(function(error) {
+              console.log("Error sending message:", error);
+            });
           res.status(200).send({
             status: 'success'
           });
