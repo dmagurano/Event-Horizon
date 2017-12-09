@@ -38,6 +38,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
@@ -401,6 +402,14 @@ public class GroupManagementActivity extends AppCompatActivity {
                     });
 
                     final Response res = response;
+
+                    try {
+                        String groupId = json.getString("groupId");
+                        Log.d(TAG, "GroupId: " + groupId);
+                        FirebaseMessaging.getInstance().unsubscribeFromTopic(groupId);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     GroupManagementActivity.this.runOnUiThread(new Runnable()
                     {
                         public void run()

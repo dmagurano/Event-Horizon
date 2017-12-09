@@ -26,7 +26,14 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,6 +68,8 @@ public class CreateGroupActivity extends AppCompatActivity {
     private String idToken;
     private String url;
     private Long millis;
+
+    private JSONObject json;
 
     private ProgressBar mSpinner;
 
@@ -210,7 +219,7 @@ public class CreateGroupActivity extends AppCompatActivity {
 
                 final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-                JSONObject json = new JSONObject();
+                json = new JSONObject();
                 try {
                     json.put("idToken", idToken);
                     json.put("groupName", groupName);
@@ -238,6 +247,16 @@ public class CreateGroupActivity extends AppCompatActivity {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
+
+                            String responseData = response.body().string();
+
+                            try {
+                                JSONObject j = new JSONObject(responseData);
+                                String groupId = j.getString("groupId");
+                                FirebaseMessaging.getInstance().subscribeToTopic(groupId);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
 
                             handler.post(new Runnable() {
                                 @Override
