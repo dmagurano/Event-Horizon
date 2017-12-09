@@ -239,7 +239,6 @@ public class MainActivity extends AppCompatActivity
             }
         }));
 
-
         // add camera button to main view
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setImageResource(R.drawable.camera);
@@ -295,6 +294,21 @@ public class MainActivity extends AppCompatActivity
         }
 
 
+    }
+
+
+    public void OnGroupButton(View v)
+    {
+        Intent i = new Intent(MainActivity.this, GroupManagementActivity.class);
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        if (user != null)
+        {
+            String uid = mAuth.getCurrentUser().getUid();
+            String group_id = mDatabase.child(USERS_CHILD).child(uid).child(GROUP_CHILD).toString();
+            i.putExtra("USER_IN_GROUP", group_id != null);
+            startActivity(i);
+        }
     }
 
 
@@ -356,7 +370,12 @@ public class MainActivity extends AppCompatActivity
 
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            if (value > 0) savePhotoToPrivateFolder( bitmap );      // <-- save to private folder
+            if (value > 0)
+            {
+                savePhotoToPrivateFolder(bitmap);                   // <-- save to private folder
+                //Snackbar.make(getCurrentFocus(),
+                //        "New image was added to Private album.", Snackbar.LENGTH_LONG);
+            }
             else uploadPhotoToServer( bitmap );                     // <-- publish to server
             busy.hide();
             busy.dismiss();
@@ -532,7 +551,10 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            return true;
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            if (intent != null) {
+                startActivity(intent);
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -548,17 +570,9 @@ public class MainActivity extends AppCompatActivity
             OnPhotoButton(this.getCurrentFocus());
         } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_group) {
-            Intent i = new Intent(MainActivity.this, GroupManagementActivity.class);
-            FirebaseUser user = mAuth.getCurrentUser();
-            if (user != null) {
-                String uid = mAuth.getCurrentUser().getUid();
-                String group_id = mDatabase.child(USERS_CHILD).child(uid).child(GROUP_CHILD).toString();
-
-                i.putExtra("USER_IN_GROUP", group_id != null);
-
-                startActivity(i);
-            }
+        } else if (id == R.id.nav_group)
+        {
+            OnGroupButton(this.getCurrentFocus());
 
         } else if (id == R.id.nav_settings) {
 
@@ -702,6 +716,36 @@ public class MainActivity extends AppCompatActivity
                 ImageView mPhoto =  (ImageView)findViewById(R.id.imageUserPhoto);
                 TextView  mName  =  (TextView) findViewById(R.id.textUserName);
                 TextView  mEmail =  (TextView) findViewById(R.id.textUserEmail);
+
+
+                // adjust default action to accordingly (camera when user is in group, otherwise join group)
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
+                if (myGroup == null || myGroup.equals(""))
+                {
+
+                    fab.setImageResource(R.drawable.join_group);
+                    fab.invalidate();
+
+                    fab.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            OnGroupButton(view);
+                        }
+                    });
+                } else {
+                    fab.setImageResource(R.drawable.camera);
+                    fab.invalidate();
+
+                    fab.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            OnPhotoButton(view);
+                        }
+                    });
+
+                }
+
 
                 //mPhoto.setImageResource(R.drawable.user);
                 mName.setText(myName);
