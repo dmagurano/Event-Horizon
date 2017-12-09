@@ -100,7 +100,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         if(!TextUtils.isEmpty(name) && !TextUtils.isEmpty(email) && !TextUtils.isEmpty(passwd)) {
             mSpinner.setVisibility(View.VISIBLE);
-            
+
             mAuth.createUserWithEmailAndPassword(email, passwd)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override

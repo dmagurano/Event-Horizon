@@ -1,6 +1,7 @@
 package fi.aalto.mcc.mcc.activity;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -21,6 +22,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 
@@ -51,8 +53,10 @@ public class CreateGroupActivity extends AppCompatActivity {
     public static TextView SelectedDateView;
 
     private TextView mDisplayDate;
+    private TextView mDisplayTime;
     private TextView mGroupName;
     private DatePickerDialog.OnDateSetListener mDateSetListener;
+    private TimePickerDialog.OnTimeSetListener mTimeSetListener;
     private Button mCreateBtn;
     private String idToken;
     private String url;
@@ -74,6 +78,10 @@ public class CreateGroupActivity extends AppCompatActivity {
         mGroupName = (EditText) findViewById(R.id.CreateGroupName);
         mDisplayDate.setInputType(InputType.TYPE_NULL);
         mDisplayDate.setFocusable(false);
+
+        mDisplayTime = (EditText) findViewById(R.id.expireTime);
+        mDisplayTime.setInputType(InputType.TYPE_NULL);
+        mDisplayTime.setFocusable(false);
         mCreateBtn = (Button) findViewById(R.id.createGroupBtn);
         mSpinner = (ProgressBar) findViewById(R.id.progressBar1);
 
@@ -117,16 +125,49 @@ public class CreateGroupActivity extends AppCompatActivity {
             }
         });
 
+        mDisplayTime.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Calendar cal = Calendar.getInstance();
+                int hours = cal.get(Calendar.HOUR_OF_DAY);
+                int minutes = cal.get(Calendar.MINUTE);
+
+                TimePickerDialog dialog = new TimePickerDialog(
+                        CreateGroupActivity.this,
+                        mTimeSetListener,
+                        hours,
+                        minutes, true);
+
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.show();
+            }
+
+        });
+
         mDateSetListener = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
                 month = month + 1;
-                Log.d(TAG, "onDateSet: mm/dd/yyy: " + month + "/" + day + "/" + year);
+                Log.d(TAG, "onDateSet: dd/mm/yyy: " + day + "/" + month + "/" + year);
 
-                String date_str = month + "/" + day + "/" + year;
+                String date_str = day + "/" + month + "/" + year;
 
                 mDisplayDate.setText(date_str);
             }
+        };
+
+        mTimeSetListener = new TimePickerDialog.OnTimeSetListener(){
+            @Override
+            public void onTimeSet(TimePicker timePicker, int hours, int minutes){
+                String mins = Integer.toString(minutes);
+                if(minutes < 10){
+                    mins = "0" + minutes;
+                }
+                String time_str = hours+":"+mins;
+
+                mDisplayTime.setText(time_str);
+            }
+
         };
 
         mCreateBtn.setOnClickListener(new View.OnClickListener() {
@@ -135,6 +176,7 @@ public class CreateGroupActivity extends AppCompatActivity {
 
                 String groupName = mGroupName.getText().toString();
                 String date_str = mDisplayDate.getText().toString();
+                String time_str = mDisplayTime.getText().toString();
 
                 if(groupName.length() == 0){
                     Toast.makeText(CreateGroupActivity.this, R.string.ng_groupName_missing,
@@ -144,17 +186,21 @@ public class CreateGroupActivity extends AppCompatActivity {
                     Toast.makeText(CreateGroupActivity.this, R.string.ng_expireDate_missing,
                             Toast.LENGTH_SHORT).show();
                     return;
+                }else if(date_str.length() == 0){
+                    Toast.makeText(CreateGroupActivity.this, R.string.ng_expireTime_missing,
+                            Toast.LENGTH_SHORT).show();
+                    return;
                 }
 
                 mSpinner.setVisibility(View.VISIBLE);
 
 
 
-                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
                 Date date = null;
                 try {
-                    date = sdf.parse(date_str);
+                    date = sdf.parse(date_str+" "+time_str);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
