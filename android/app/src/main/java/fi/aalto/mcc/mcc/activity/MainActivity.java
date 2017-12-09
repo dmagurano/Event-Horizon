@@ -249,6 +249,10 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+
+        ImageView pleaseNote = (ImageView)  findViewById(R.id.imagePleaseNote);
+        pleaseNote.setVisibility(View.INVISIBLE);
+
         // add main navigation
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -720,9 +724,11 @@ public class MainActivity extends AppCompatActivity
 
                 // adjust default action to accordingly (camera when user is in group, otherwise join group)
                 FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                ImageView pleaseNote = (ImageView)  findViewById(R.id.imagePleaseNote);
 
                 if (myGroup == null || myGroup.equals(""))
                 {
+                    pleaseNote.setVisibility(View.VISIBLE);
 
                     fab.setImageResource(R.drawable.join_group);
                     fab.invalidate();
@@ -734,6 +740,10 @@ public class MainActivity extends AppCompatActivity
                         }
                     });
                 } else {
+
+
+                    pleaseNote.setVisibility(View.INVISIBLE);
+
                     fab.setImageResource(R.drawable.camera);
                     fab.invalidate();
 
