@@ -1,5 +1,7 @@
 Mobile Cloud Computing Group 4
 ==============================
+Event-based picture sharing app allowing users participating to a certain event to share related pictures, with real-time synchronization and automatic
+categorization on the cloud based on the presence of people.
 
 ## Deploy instruction
 
