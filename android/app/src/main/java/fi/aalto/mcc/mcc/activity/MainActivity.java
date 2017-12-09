@@ -571,7 +571,10 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            OnPhotoButton(this.getCurrentFocus());
+            if (myGroup == null || myGroup.equals("") )
+                Snackbar.make(getCurrentFocus(), "Please join or create group event first.", Snackbar.LENGTH_LONG).setAction("Notification", null).show();
+            else
+                OnPhotoButton(this.getCurrentFocus());
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_group)
