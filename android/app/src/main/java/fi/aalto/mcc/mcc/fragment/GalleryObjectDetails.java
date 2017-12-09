@@ -1,12 +1,21 @@
 package fi.aalto.mcc.mcc.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,15 +23,28 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.BitmapRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
+import fi.aalto.mcc.mcc.BuildConfig;
 import fi.aalto.mcc.mcc.R;
+import fi.aalto.mcc.mcc.activity.MainActivity;
 import fi.aalto.mcc.mcc.activity.SettingsActivity;
 import fi.aalto.mcc.mcc.helper.Connectivity;
 import fi.aalto.mcc.mcc.helper.TouchImageView;
@@ -34,6 +56,10 @@ import fi.aalto.mcc.mcc.model.GalleryObject;
 
 
 public class GalleryObjectDetails extends DialogFragment {
+
+    public static final String DIR_SHARED       = "/Shared";
+    public static final String DIR_DATA         = "/Android/data/";
+
 
     private String TAG = GalleryObjectDetails.class.getSimpleName();
     private ArrayList<GalleryObject> listObjects;
@@ -123,16 +149,111 @@ public class GalleryObjectDetails extends DialogFragment {
 
     public void OnBackButton(View v)
     {
-        //super.onBackPressed();
         dismiss();
     }
 
 
-    public void OnShareButton(View v)
-    {
+    public void OnShareButton(View v) {
+        String path = "";
+        Bitmap sharedBitmap = null;
+        File sharedFile = null;
+        Uri uriSharedFile = null;
+
+
+        if (selectedPosition < listObjects.size())
+            path = listObjects.get(selectedPosition).getXL();
+
+        if (path == null){
+            return;
+        }
+
+
+        // XXX PROBLEM HERE (BELOW)
+        try {
+            if (path.startsWith("gs:"))
+                sharedBitmap = Glide.
+                        with(getActivity()).
+                        using(new FirebaseImageLoader()).
+                        load(storage.getReferenceFromUrl(path)).
+                        asBitmap().
+                        into(-1, -1).
+                        get();
+            else {
+                sharedFile = new File(path);
+                uriSharedFile = Uri.fromFile(sharedFile);
+            }
+
+        } catch (final ExecutionException e) {
+            Log.e(TAG, e.getMessage());
+        } catch (final InterruptedException e) {
+            Log.e(TAG, e.getMessage());
+        }
+
+
+        if (uriSharedFile == null && sharedBitmap != null)
+        {
+            sharedFile = saveToFile(sharedBitmap);
+            uriSharedFile = Uri.fromFile(sharedFile);
+            /*
+            // custom file provider not needed ?
+            Uri uriSharedFile = FileProvider.getUriForFile(getActivity().getApplicationContext(),
+                        BuildConfig.APPLICATION_ID + ".provider",
+                        sharedFile);
+                        */
+        }
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("image/jpg");
+        intent.putExtra(Intent.EXTRA_STREAM, uriSharedFile);
+        startActivity(Intent.createChooser(intent, "Share"));
+
+
 
         return;
 
+    }
+
+    public File saveToFile(Bitmap bitmap) {
+
+        File pictureFile = getOutputMediaFile();
+
+        if (pictureFile == null) {
+            return null;
+        }
+        try {
+            FileOutputStream streamOutput = new FileOutputStream(pictureFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, streamOutput);
+            streamOutput.close();
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+            return null;
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
+            return null;
+        }
+        return pictureFile;
+    }
+
+
+
+    private File getOutputMediaFile() {
+        File mediaStorageDir = null;
+
+        mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                        + DIR_DATA
+                        + getActivity().getApplicationContext().getPackageName()
+                        + DIR_SHARED);
+
+
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                return null;
+            }
+        }
+
+        String mPhotoName = "SHARE_" + new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + ".jpg";
+        File mPhotoFile = new File(mediaStorageDir.getPath() + File.separator + mPhotoName);
+        return mPhotoFile;
     }
 
 
@@ -188,9 +309,9 @@ public class GalleryObjectDetails extends DialogFragment {
             layoutInflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View _view = layoutInflater.inflate(R.layout.image_fullscreen, null);
 
-
             TouchImageView imageViewDetails = (TouchImageView) _view.findViewById(R.id.image_preview);
             imageViewDetails.setImageResource(R.drawable.ic_menu_gallery);
+
 
             // XXX might move the bandwidth detection code inside helper later (SM)
             String path = "";
