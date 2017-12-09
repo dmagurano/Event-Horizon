@@ -197,6 +197,26 @@ app.post('/leave', (req, res) => {
                       userRef.update({
                           group: null
                       })
+                      ref.child("Users/" + uid + "/name").once("value")
+                      .then(function(username) {
+                        /* sending push notification to device */
+                        var payload = {
+                          notification: {
+                            title: "An user left the group",
+                            body: "User "+username.val()+" left the group"
+                          }
+                        };
+                        // Send a message to devices subscribed to the provided topic.
+                        admin.messaging().sendToTopic(req.body.groupId, payload)
+                          .then(function(response) {
+                            // See the MessagingTopicResponse reference documentation for the
+                            // contents of response.
+                            console.log("Successfully sent message:", response);
+                          })
+                          .catch(function(error) {
+                            console.log("Error sending message:", error);
+                          });
+                      })
                       res.send("User "+uid+" remove succeded")
                     })
                     .catch(function(error) {
