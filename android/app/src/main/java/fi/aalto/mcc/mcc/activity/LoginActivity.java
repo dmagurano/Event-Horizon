@@ -1,5 +1,6 @@
 package fi.aalto.mcc.mcc.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,6 +31,8 @@ import fi.aalto.mcc.mcc.R;
 
 
 public class LoginActivity extends AppCompatActivity {
+
+    static final int REGISTER_USER_REQUEST = 1;
 
     private FirebaseAuth mAuth;
     private String TAG = "Login";
@@ -77,15 +80,33 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent i = new Intent(LoginActivity.this, RegisterActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(i);
+                startActivityForResult(i, REGISTER_USER_REQUEST);
             }
         });
 
     }
 
-    private void logIn(){
-        String email = mEmailInput.getText().toString().trim();
-        String passwd = mPasswdInput.getText().toString().trim();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == REGISTER_USER_REQUEST){
+            if(resultCode == Activity.RESULT_OK){
+                String email = data.getStringExtra("email");
+                String password =data.getStringExtra("password");
+
+                mEmailInput.setText(email);
+                mPasswdInput.setText(password);
+
+                logIn(email, password);
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                Toast.makeText(LoginActivity.this, R.string.auth_failed,
+                                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void logIn(String email, String passwd){
 
         if(!TextUtils.isEmpty(email) && !TextUtils.isEmpty(passwd)){
 
@@ -133,6 +154,13 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     });
         }
+    }
+
+    private void logIn(){
+        String email = mEmailInput.getText().toString().trim();
+        String passwd = mPasswdInput.getText().toString().trim();
+
+        logIn(email, passwd);
     }
 
     public void setupUI(View view) {

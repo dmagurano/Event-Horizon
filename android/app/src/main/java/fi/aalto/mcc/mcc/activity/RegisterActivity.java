@@ -1,5 +1,6 @@
 package fi.aalto.mcc.mcc.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -101,11 +102,14 @@ public class RegisterActivity extends AppCompatActivity {
 
         final String usr_email = email;
         final String usr_name = name;
+        final String usr_password = passwd;
 
 
 
         if(!TextUtils.isEmpty(name) && !TextUtils.isEmpty(email) && !TextUtils.isEmpty(passwd)) {
             mSpinner.setVisibility(View.VISIBLE);
+
+
 
             mAuth.createUserWithEmailAndPassword(email, passwd)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -139,13 +143,18 @@ public class RegisterActivity extends AppCompatActivity {
                                 prefs.edit().putBoolean("firstTimeUser_"+uid, true).commit();
                                 Log.d(TAG, uid + " " + Boolean.toString(prefs.getBoolean("firstTimeUser_"+uid,false)));
 
-                                Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
-                                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                startActivity(i);
+                                Intent returnIntent = new Intent();
+                                returnIntent.putExtra("email", usr_email);
+                                returnIntent.putExtra("password", usr_password);
+                                setResult(Activity.RESULT_OK, returnIntent);
+                                finish();
+
+
                             } else {
                                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                                Toast.makeText(RegisterActivity.this, R.string.auth_failed,
-                                        Toast.LENGTH_SHORT).show();
+                                Intent returnIntent = new Intent();
+                                setResult(Activity.RESULT_CANCELED, returnIntent);
+                                finish();
                             }
                         }
                     });
