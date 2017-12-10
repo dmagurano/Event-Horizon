@@ -130,6 +130,9 @@ public class GroupManagementActivity extends AppCompatActivity {
         mSpinner = (ProgressBar) findViewById(R.id.progressBar1);
         mSpinner.setVisibility(View.GONE);
 
+        no_group.setVisibility(View.GONE);
+        yes_group.setVisibility(View.GONE);
+
         client = new OkHttpClient();
         url = "https://mcc-fall-2017-g04.appspot.com"; //CHANGE THIS TO WHERE THE CUSTOM BACKEND IS RUNNING
 
@@ -161,9 +164,6 @@ public class GroupManagementActivity extends AppCompatActivity {
                 String group = user_obj.getGroup();
 
                 USER_IN_GROUP = group != null;
-
-                no_group.setVisibility(View.GONE);
-                yes_group.setVisibility(View.GONE);
 
                 final List<String> group_members_list = new ArrayList<String>();
 
