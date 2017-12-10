@@ -147,7 +147,6 @@ public class CreateGroupActivity extends AppCompatActivity {
                         hours,
                         minutes, true);
 
-                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                 dialog.show();
             }
 
