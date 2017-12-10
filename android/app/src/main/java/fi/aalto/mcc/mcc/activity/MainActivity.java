@@ -932,6 +932,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onRestart() {
+        super.onRestart();
+        doLogin();
+    }
+
+
+
+    @Override
     public void onStop() {
         super.onStop();
         if (mAuthListener != null) {
