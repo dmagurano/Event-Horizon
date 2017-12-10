@@ -418,7 +418,7 @@ public class MainActivity extends AppCompatActivity
         protected void onPreExecute() {
             super.onPreExecute();
             busy.setMessage("Uploading to Server...");
-            //busy.show();
+            busy.show();
         }
 
         @Override
