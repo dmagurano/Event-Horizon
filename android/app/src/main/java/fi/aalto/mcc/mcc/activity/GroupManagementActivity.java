@@ -76,6 +76,7 @@ public class GroupManagementActivity extends AppCompatActivity {
     private static boolean USER_IN_GROUP;
     private UserObject user_obj = null;
     private GroupObject group_obj = null;
+    private String mGroup = null;
     private FirebaseUser mUser;
     private DatabaseReference mUserDatabase;
     private DatabaseReference mGroupDatabase;
@@ -114,6 +115,7 @@ public class GroupManagementActivity extends AppCompatActivity {
         mGroupDatabase = FirebaseDatabase.getInstance().getReference("Groups");
         no_group = (ConstraintLayout) findViewById(R.id.group_no);
         yes_group = (ConstraintLayout) findViewById(R.id.group_yes);
+        idToken = null;
 
         mLeaveBtn = (Button) findViewById(R.id.deleteBtn);
         mInviteBtn = (Button) findViewById(R.id.inviteBtn);
@@ -140,6 +142,14 @@ public class GroupManagementActivity extends AppCompatActivity {
         }
 
 
+        mUser.getIdToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+            public void onComplete(@NonNull Task<GetTokenResult> task) {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "getIDTOKEN: " + task.getResult().getToken());
+                    idToken = task.getResult().getToken();
+                }
+            }
+        });
 
 
         mEventListener = new ValueEventListener() {
@@ -156,20 +166,9 @@ public class GroupManagementActivity extends AppCompatActivity {
 
                 final List<String> group_members_list = new ArrayList<String>();
 
-                mUser.getIdToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-                    public void onComplete(@NonNull Task<GetTokenResult> task) {
-                        if (task.isSuccessful()) {
-                            idToken = task.getResult().getToken();
-
-                        } else {
-                            // Handle error -> task.getException();
-                            idToken = null;
-                        }
-                    }
-                });
-
                 if(USER_IN_GROUP){
                     yes_group.setVisibility(View.VISIBLE);
+                    mGroup = group;
                     mGroupEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -369,7 +368,6 @@ public class GroupManagementActivity extends AppCompatActivity {
                         .show();
             }
         });
-
     }
 
     protected void leaveGroup(){
@@ -381,7 +379,10 @@ public class GroupManagementActivity extends AppCompatActivity {
         json = new JSONObject();
         try {
             json.put("idToken", idToken);
-            json.put("groupId", user_obj.getGroup());
+            json.put("groupId", mGroup);
+
+            Log.d(TAG, "LEAVE ID TOKEN: " + idToken);
+            Log.d(TAG, "LEAVE GROUP ID: " + mGroup);
 
             RequestBody body = RequestBody.create(JSON, json.toString());
 
