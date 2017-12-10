@@ -100,7 +100,7 @@
         android:layout_height="50dp"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="140dp"
+        android:layout_marginBottom="60dp"
         android:text="@string/signupBtn_text"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginLeft="8dp"

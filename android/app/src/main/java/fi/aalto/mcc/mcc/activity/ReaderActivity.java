@@ -139,6 +139,7 @@ public class ReaderActivity extends AppCompatActivity {
         else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+
         this.finish();
     }
 }
