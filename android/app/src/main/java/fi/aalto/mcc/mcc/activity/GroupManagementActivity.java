@@ -449,10 +449,6 @@ public class GroupManagementActivity extends AppCompatActivity {
 
     @Override
     public void onStop() {
-        mUserDatabase.child(mUser.getUid()).removeEventListener(mEventListener);
-        if(mGroupEventListener != null && user_obj.getGroup() != null){
-            mGroupDatabase.child(user_obj.getGroup()).removeEventListener(mGroupEventListener);
-        }
         super.onStop();
     }
 
