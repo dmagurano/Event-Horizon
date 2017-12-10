@@ -81,7 +81,9 @@ public class GalleryObjectDetails extends DialogFragment {
     private int selectedPosition = 0;
     private Connectivity cm;
     int syncLAN = 1, syncWAN = 1;
-    ProgressDialog busy;
+    private ProgressDialog busy;
+    private File sharedFile;
+    private Uri uriSharedFile;
 
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageReference = storage.getReference();
@@ -167,10 +169,6 @@ public class GalleryObjectDetails extends DialogFragment {
 
     public void OnShareButton(View v) {
         String path = null;
-        Bitmap sharedBitmap = null;
-        File sharedFile = null;
-        Uri uriSharedFile = null;
-
 
         if (selectedPosition < listObjects.size())
             path = listObjects.get(selectedPosition).getXL();
@@ -200,6 +198,7 @@ public class GalleryObjectDetails extends DialogFragment {
                         startActivity(Intent.createChooser(intent, "Share"));
                         busy.hide();
                         busy.dismiss();
+                        getActivity().getContentResolver().delete(uriSharedFile, null, null);
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -233,10 +232,12 @@ public class GalleryObjectDetails extends DialogFragment {
                 intent.setType("image/jpg");
                 intent.putExtra(Intent.EXTRA_STREAM, uriSharedFile);
                 startActivity(Intent.createChooser(intent, "Share"));
+                getActivity().getContentResolver().delete(uriSharedFile, null, null);
             }
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
+
 
         return;
 

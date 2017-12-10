@@ -452,9 +452,7 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-            File file = new File(uriPhotoFileTarget.getPath());
-            if (file.exists())
-                file.delete();
+            getContentResolver().delete(uriPhotoFileTarget, null, null);
             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uriPhotoFileTarget));
 
             busy.hide();
