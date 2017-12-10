@@ -8,62 +8,39 @@
     tools:context="fi.aalto.mcc.mcc.activity.CreateGroupActivity">
 
 
-
-
     <EditText
         android:id="@+id/CreateGroupName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginEnd="60dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="40dp"
         android:ems="10"
         android:hint="@string/ng_name_hint"
+
         android:inputType="textPersonName"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="16dp"
+        android:textStyle="normal"
+
+
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/CreateGroupTitle" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/expireDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginEnd="60dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="40dp"
+        android:textSize="16dp"
+        android:textStyle="normal"
+        android:textColor="@android:color/darker_gray"
         android:ems="10"
         android:inputType="datetime"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/CreateGroupName" />
-
-    <TextView
-        android:id="@+id/CreateGroupTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/create_group_title"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/groupName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/ng_name_title"
-        app:layout_constraintEnd_toStartOf="@+id/CreateGroupName"
-        app:layout_constraintTop_toTopOf="@+id/CreateGroupName" />
-
-    <TextView
-        android:id="@+id/groupDuration"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/ng_expiration_title"
-        app:layout_constraintEnd_toStartOf="@+id/expireDate"
-        app:layout_constraintTop_toTopOf="@+id/expireDate" />
 
     <Button
         android:id="@+id/createGroupBtn"
@@ -93,26 +70,60 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/groupExpireTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/ng_expirationTime_title"
-        app:layout_constraintEnd_toStartOf="@+id/expireTime"
-        app:layout_constraintTop_toTopOf="@+id/expireTime" />
-
     <EditText
         android:id="@+id/expireTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginEnd="60dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="40dp"
+        android:textSize="16dp"
+        android:textStyle="normal"
+        android:textColor="@android:color/darker_gray"
         android:ems="10"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/expireDate" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Event name"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="10dp"
+
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/CreateGroupName"
+        app:layout_constraintStart_toStartOf="@+id/CreateGroupName"
+        tools:text="Event name" />
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Expiration date"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/expireDate"
+        app:layout_constraintStart_toStartOf="@+id/expireDate"
+        tools:text="Expiration date" />
+
+    <TextView
+        android:id="@+id/textView10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Expiration time"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/expireTime"
+        app:layout_constraintStart_toStartOf="@+id/expireTime"
+        tools:text="Expiration time" />
 
 
 </android.support.constraint.ConstraintLayout>
