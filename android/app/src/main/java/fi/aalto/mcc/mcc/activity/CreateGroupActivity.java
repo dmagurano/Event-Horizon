@@ -43,6 +43,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import fi.aalto.mcc.mcc.R;
 import okhttp3.Call;
@@ -93,6 +94,20 @@ public class CreateGroupActivity extends AppCompatActivity {
         mDisplayTime.setFocusable(false);
         mCreateBtn = (Button) findViewById(R.id.createGroupBtn);
         mSpinner = (ProgressBar) findViewById(R.id.progressBar1);
+
+
+        //prefilled event infromation (SM)
+        Calendar sCalendar = Calendar.getInstance();
+        String dayLongName = sCalendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.US);
+        mGroupName.setText("My " + dayLongName + " Event");
+        mGroupName.setSelectAllOnFocus(true);
+
+        mDisplayDate.setText("24/12/2017");
+
+        mDisplayTime.setText("00:00");
+
+
+
 
         mSpinner.setVisibility(View.GONE);
 
