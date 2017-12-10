@@ -137,7 +137,7 @@ public class LoginActivity extends AppCompatActivity {
 
                                     Intent i = new Intent(LoginActivity.this, WelcomeActivity.class);
                                     startActivity(i);
-
+                                    finish();
                                     prefs.edit().putBoolean("firstTimeUser_"+user.getUid(), false).commit();
                                 }else {
                                     Intent i = new Intent(LoginActivity.this, MainActivity.class);
