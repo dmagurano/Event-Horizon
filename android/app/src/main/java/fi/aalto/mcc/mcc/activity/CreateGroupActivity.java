@@ -108,7 +108,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                 OnEventName(view);
             }
         });
-        
+
         mGroupName.setSelectAllOnFocus(true);
         mGroupName.setOnFocusChangeListener(new View.OnFocusChangeListener(){
             public void onFocusChange(View v, boolean hasFocus){
