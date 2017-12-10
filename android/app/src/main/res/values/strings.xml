@@ -17,7 +17,8 @@
     <string name="password">Password</string>
     <string name="signupBtn_text">Create account</string>
 
-    <string name="auth_failed">User creation failed. Please try again.</string>
+    <string name="auth_failed">Authentication failed</string>
+    <string name="user_creation_failed">Account creation failed. Please try again.</string>
     <string name="pw_check_failed">Retype your password</string>
 
     <string name="name_title">Enter your name:</string>

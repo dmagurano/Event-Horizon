@@ -104,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
                 logIn(email, password);
             }
             if (resultCode == Activity.RESULT_CANCELED) {
-                Toast.makeText(LoginActivity.this, R.string.auth_failed,
+                Toast.makeText(LoginActivity.this, R.string.user_creation_failed,
                                         Toast.LENGTH_SHORT).show();
             }
         }
