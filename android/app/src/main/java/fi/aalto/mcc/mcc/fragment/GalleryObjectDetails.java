@@ -333,7 +333,7 @@ public class GalleryObjectDetails extends DialogFragment {
 
                 Toast.makeText(getActivity().getApplicationContext(), "Image downloaded in Event Horizon folder",                        Toast.LENGTH_SHORT).show();
                 //Snackbar.make(getActivity().getCurrentFocus(), "Image downloaded in Event Horizon folder", Snackbar.LENGTH_LONG).setAction("Notification", null).show();
-
+                getActivity().getApplicationContext().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uriSharedFile));
             }
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());

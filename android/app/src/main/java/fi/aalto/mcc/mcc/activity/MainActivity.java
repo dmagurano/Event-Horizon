@@ -418,7 +418,7 @@ public class MainActivity extends AppCompatActivity
         protected void onPreExecute() {
             super.onPreExecute();
             busy.setMessage("Uploading to Server...");
-            //busy.show();
+            busy.show();
         }
 
         @Override
@@ -445,6 +445,7 @@ public class MainActivity extends AppCompatActivity
 
             } catch (Exception e) {
                 Log.i(TAG, "Connection error: " + e.toString());
+                return "Fail";
             }
             Log.i(TAG, "Upload done.");
             return "Success";
@@ -455,6 +456,9 @@ public class MainActivity extends AppCompatActivity
 
             getContentResolver().delete(uriPhotoFileTarget, null, null);
             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uriPhotoFileTarget));
+
+            if(result.equals("Fail"))
+                Toast.makeText(MainActivity.this, "Connection Error", Toast.LENGTH_SHORT).show();
 
             busy.hide();
             busy.dismiss();
