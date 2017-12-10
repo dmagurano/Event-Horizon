@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.BitmapRequestBuilder;
 import com.bumptech.glide.Glide;
@@ -43,9 +44,11 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,6 +72,7 @@ public class GalleryObjectDetails extends DialogFragment {
     public static final String DIR_SHARED       = "/Shared";
     public static final String DIR_DATA         = "/Android/data/";
     public static final String DIR_PRIVATE      = "/PrivateFiles/";
+    public static final String DIR_SAVE         = "/Event Horizon";
 
 
     private String TAG = GalleryObjectDetails.class.getSimpleName();
@@ -76,12 +80,11 @@ public class GalleryObjectDetails extends DialogFragment {
     private ViewPager viewPager;
     private CustomViewPagerAdapter viewPagerAdapter;
     private TextView labelCount;
-    private ImageView buttonShare, buttonBack;
-    private TextView buttonShareTouch, buttonBackTouch;
+    private ImageView buttonShare, buttonBack, buttonSave;
+    private TextView buttonShareTouch, buttonBackTouch, buttonSaveTouch;
     private int selectedPosition = 0;
     private Connectivity cm;
     int syncLAN = 1, syncWAN = 1;
-    private ProgressDialog busy;
     private File sharedFile;
     private Uri uriSharedFile;
 
@@ -102,11 +105,11 @@ public class GalleryObjectDetails extends DialogFragment {
 
         buttonBack  = (ImageView) v.findViewById(R.id.backButton);
         buttonShare = (ImageView) v.findViewById(R.id.shareButton);
+        buttonSave = (ImageView) v.findViewById(R.id.saveButton);
 
         buttonBackTouch  = (TextView) v.findViewById(R.id.backButtonTouchArea);
         buttonShareTouch = (TextView) v.findViewById(R.id.shareButtonTouchArea);
-        busy = new ProgressDialog(getActivity());
-
+        buttonSaveTouch = (TextView) v.findViewById(R.id.saveButtonTouchArea);
 
         buttonBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,7 +117,6 @@ public class GalleryObjectDetails extends DialogFragment {
                 OnBackButton(view);
             }
         });
-
 
         buttonBackTouch.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,6 +136,20 @@ public class GalleryObjectDetails extends DialogFragment {
             @Override
             public void onClick(View view) {
                 OnShareButton(view);
+            }
+        });
+
+        buttonSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OnSaveButton(view);
+            }
+        });
+
+        buttonSaveTouch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OnSaveButton(view);
             }
         });
 
@@ -169,6 +185,8 @@ public class GalleryObjectDetails extends DialogFragment {
 
     public void OnShareButton(View v) {
         String path = null;
+
+        final ProgressDialog busy = new ProgressDialog(getActivity());
 
         if (selectedPosition < listObjects.size())
             path = listObjects.get(selectedPosition).getXL();
@@ -232,7 +250,6 @@ public class GalleryObjectDetails extends DialogFragment {
                 intent.setType("image/jpg");
                 intent.putExtra(Intent.EXTRA_STREAM, uriSharedFile);
                 startActivity(Intent.createChooser(intent, "Share"));
-                getActivity().getContentResolver().delete(uriSharedFile, null, null);
             }
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -241,6 +258,96 @@ public class GalleryObjectDetails extends DialogFragment {
 
         return;
 
+    }
+
+    public void OnSaveButton(View v) {
+        String path = null;
+
+        final ProgressDialog busy = new ProgressDialog(getActivity());
+
+        if (selectedPosition < listObjects.size())
+            path = listObjects.get(selectedPosition).getXL();
+
+        if (path == null){
+            return;
+        }
+
+        try {
+            if (path.startsWith("gs:")) {
+                sharedFile = getSavedFile();
+                uriSharedFile = FileProvider.getUriForFile(getActivity().getApplicationContext(),
+                        BuildConfig.APPLICATION_ID + ".provider",
+                        sharedFile);
+
+                busy.setMessage("Downloading...");
+                busy.show();
+
+                storage.getReferenceFromUrl(path).getFile(sharedFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        busy.hide();
+                        busy.dismiss();
+                        Toast.makeText(getActivity().getApplicationContext(), "Image downloaded in Event Horizon folder",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Log.e("Share Image","local temp file not created " +exception.toString());
+                    }
+                }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        // progress percentage
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+
+                        // percentage in progress dialog
+                        busy.setMessage("Downloaded " + ((int) progress) + "%...");
+                    }
+                });;
+
+            }
+            else {
+                String filename = path.split("/")[10];
+                sharedFile = new File(Environment.getExternalStorageDirectory()
+                        + DIR_DATA
+                        + getActivity().getApplicationContext().getPackageName()
+                        + DIR_PRIVATE
+                        + filename);
+                uriSharedFile = FileProvider.getUriForFile(getActivity().getApplicationContext(),
+                        BuildConfig.APPLICATION_ID + ".provider",
+                        sharedFile);
+                File destination = getSavedFile();
+                try {
+                    copyFile(sharedFile, destination);
+                }
+                catch (IOException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+
+                Toast.makeText(getActivity().getApplicationContext(), "Image downloaded in Event Horizon folder",
+                        Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+
+
+        return;
+
+    }
+
+    void copyFile(File src, File dst) throws IOException {
+        FileChannel inChannel = new FileInputStream(src).getChannel();
+        FileChannel outChannel = new FileOutputStream(dst).getChannel();
+        try {
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+        } finally {
+            if (inChannel != null)
+                inChannel.close();
+            if (outChannel != null)
+                outChannel.close();
+        }
     }
 
     public File saveToFile(Bitmap bitmap) {
@@ -286,6 +393,19 @@ public class GalleryObjectDetails extends DialogFragment {
         return mPhotoFile;
     }
 
+    private File getSavedFile() {
+        File saveDir = new File(Environment.getExternalStorageDirectory()
+                                + DIR_SAVE);
+        if (!saveDir.exists()) {
+            if (!saveDir.mkdirs()) {
+                return null;
+            }
+        }
+
+        String mPhotoName = "SAVED_" + new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date()) + ".jpg";
+        File mPhotoFile = new File(saveDir.getPath() + File.separator + mPhotoName);
+        return mPhotoFile;
+    }
 
 
     private void setCurrentItem(int position) {
