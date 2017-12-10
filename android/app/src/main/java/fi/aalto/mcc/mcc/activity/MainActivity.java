@@ -249,7 +249,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-
+        // hook "no group selected" indicator and hide it
         ImageView pleaseNote = (ImageView)  findViewById(R.id.imagePleaseNote);
         pleaseNote.setVisibility(View.INVISIBLE);
 
@@ -686,6 +686,59 @@ public class MainActivity extends AppCompatActivity
         return mPhotoFile;
     }
 
+    public void setGroupVisibility()
+    {
+
+        ImageView mPhoto =  (ImageView)findViewById(R.id.imageUserPhoto);
+        TextView  mName  =  (TextView) findViewById(R.id.textUserName);
+        TextView  mEmail =  (TextView) findViewById(R.id.textUserEmail);
+
+
+        // adjust default action to accordingly (camera when user is in group, otherwise join group)
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        ImageView pleaseNote = (ImageView)  findViewById(R.id.imagePleaseNote);
+
+        if (myGroup == null || myGroup.equals(""))
+        {
+            pleaseNote.setVisibility(View.VISIBLE);
+
+            fab.setImageResource(R.drawable.join_group);
+            fab.invalidate();
+
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    OnGroupButton(view);
+                }
+            });
+        } else {
+
+
+            pleaseNote.setVisibility(View.INVISIBLE);
+
+            fab.setImageResource(R.drawable.camera);
+            fab.invalidate();
+
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    OnPhotoButton(view);
+                }
+            });
+
+        }
+
+
+        //mPhoto.setImageResource(R.drawable.user);
+        mName.setText(myName);
+        mEmail.setText(myEmail);
+
+
+
+    }
+
+
+
 
 
 
@@ -718,50 +771,7 @@ public class MainActivity extends AppCompatActivity
                     if( data.getKey().equals(GROUP_CHILD) && data.getValue() != null)   myGroup = data.getValue().toString();
                 }
 
-                ImageView mPhoto =  (ImageView)findViewById(R.id.imageUserPhoto);
-                TextView  mName  =  (TextView) findViewById(R.id.textUserName);
-                TextView  mEmail =  (TextView) findViewById(R.id.textUserEmail);
-
-
-                // adjust default action to accordingly (camera when user is in group, otherwise join group)
-                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-                ImageView pleaseNote = (ImageView)  findViewById(R.id.imagePleaseNote);
-
-                if (myGroup == null || myGroup.equals(""))
-                {
-                    pleaseNote.setVisibility(View.VISIBLE);
-
-                    fab.setImageResource(R.drawable.join_group);
-                    fab.invalidate();
-
-                    fab.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            OnGroupButton(view);
-                        }
-                    });
-                } else {
-
-
-                    pleaseNote.setVisibility(View.INVISIBLE);
-
-                    fab.setImageResource(R.drawable.camera);
-                    fab.invalidate();
-
-                    fab.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            OnPhotoButton(view);
-                        }
-                    });
-
-                }
-
-
-                //mPhoto.setImageResource(R.drawable.user);
-                mName.setText(myName);
-                mEmail.setText(myEmail);
-
+                setGroupVisibility();
                 addGroupListener(myGroup);
                 privateAlbum = createPrivateAlbum();
             }
@@ -808,7 +818,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
-                Snackbar.make(getCurrentFocus(), "Failed to read user group information: " +  error.toException(), Snackbar.LENGTH_LONG).setAction("Error", null).show();
+                //Snackbar.make(getCurrentFocus(), "Failed to read user group information: " +  error.toException(), Snackbar.LENGTH_LONG).setAction("Error", null).show();
+                Snackbar.make(getCurrentFocus(), "User has been ejected from current group event.", Snackbar.LENGTH_LONG).setAction("Error", null).show();
+                myGroup = null;
+                setGroupVisibility();
+                albumList.clear();
+                adapter.notifyDataSetChanged();
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
@@ -868,11 +883,9 @@ public class MainActivity extends AppCompatActivity
                 if (mUser != null) {
 
                     if(!initDone) {
-                        // initialize user name and load images from private folder
+                        // initialize user data and then load images from private folder
+                        // then if succesfull initialize primary data listeners in order
                         addUserNameValueListenerEx();
-
-                        // initialize primary data listeners in order
-                        //addUserGroupValueListener();
                     }
 
                     // get id token

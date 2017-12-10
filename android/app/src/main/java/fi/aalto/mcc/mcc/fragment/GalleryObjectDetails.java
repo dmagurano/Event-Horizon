@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.PagerAdapter;
@@ -165,8 +166,8 @@ public class GalleryObjectDetails extends DialogFragment {
 
         cm = new Connectivity();
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
-        int syncLAN = Integer.parseInt(sharedPref.getString("sync_quality_lan","1"));
-        int syncWAN = Integer.parseInt(sharedPref.getString("sync_quality_wan","1"));
+        syncLAN = Integer.parseInt(sharedPref.getString("sync_quality_lan","1"));
+        syncWAN = Integer.parseInt(sharedPref.getString("sync_quality_wan","1"));
 
 
 
@@ -196,7 +197,6 @@ public class GalleryObjectDetails extends DialogFragment {
         }
 
 
-        // XXX PROBLEM HERE (BELOW)
         try {
             if (path.startsWith("gs:")) {
                 sharedFile = getOutputMediaFile();
@@ -289,6 +289,8 @@ public class GalleryObjectDetails extends DialogFragment {
                         busy.dismiss();
                         Toast.makeText(getActivity().getApplicationContext(), "Image downloaded in Event Horizon folder",
                                 Toast.LENGTH_SHORT).show();
+                        //Snackbar.make(getActivity().getCurrentFocus(), "Image downloaded in Event Horizon folder", Snackbar.LENGTH_LONG).setAction("Notification", null).show();
+
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -325,8 +327,13 @@ public class GalleryObjectDetails extends DialogFragment {
                     Log.e(TAG, e.getMessage());
                 }
 
-                Toast.makeText(getActivity().getApplicationContext(), "Image downloaded in Event Horizon folder",
-                        Toast.LENGTH_SHORT).show();
+                // XXX should send gallery app invoke to reload images
+                //getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(destination)));
+
+
+                Toast.makeText(getActivity().getApplicationContext(), "Image downloaded in Event Horizon folder",                        Toast.LENGTH_SHORT).show();
+                //Snackbar.make(getActivity().getCurrentFocus(), "Image downloaded in Event Horizon folder", Snackbar.LENGTH_LONG).setAction("Notification", null).show();
+
             }
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());

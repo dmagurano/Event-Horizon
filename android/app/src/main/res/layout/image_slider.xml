@@ -77,7 +77,7 @@
         android:layout_alignTop="@+id/shareButton"
         android:layout_toStartOf="@+id/shareButtonTouchArea"
         android:background="@android:color/transparent"
-        app:srcCompat="@android:drawable/ic_menu_save" />
+        app:srcCompat="@drawable/ic_download_white" />
 
     <TextView
         android:id="@+id/saveButtonTouchArea"
