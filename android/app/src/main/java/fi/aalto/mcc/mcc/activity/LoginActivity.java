@@ -142,6 +142,7 @@ public class LoginActivity extends AppCompatActivity {
                                 }else {
                                     Intent i = new Intent(LoginActivity.this, MainActivity.class);
                                     startActivity(i);
+                                    finish();
                                 }
                             }else{
                                 Log.w(TAG, "signInWithEmail:failed", task.getException());
