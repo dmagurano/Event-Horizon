@@ -107,6 +107,7 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import fi.aalto.mcc.mcc.BuildConfig;
@@ -587,6 +588,10 @@ public class MainActivity extends AppCompatActivity
             }
 
         } else if (id == R.id.nav_logout) {
+            if(myGroup != null){
+                FirebaseMessaging.getInstance().unsubscribeFromTopic(myGroup);
+                Log.d(TAG, "Unsubscribed from group: " + myGroup);
+            }
             mAuth.signOut();
         }
 
@@ -794,6 +799,9 @@ public class MainActivity extends AppCompatActivity
 
         // cancel previous listener
         if (mGroupRef != null && valueListenerGroup != null) mGroupRef.removeEventListener(valueListenerGroup);
+
+        FirebaseMessaging.getInstance().subscribeToTopic(myGroupValue);
+        Log.d(TAG, "Subscribed to group: " + myGroupValue);
 
         // add new listener
         mGroupRef= mDatabase.child(GROUPS_CHILD).child(myGroupValue);
