@@ -227,6 +227,7 @@ public class GroupManagementActivity extends AppCompatActivity {
                         @Override
                         public void onCancelled(DatabaseError error) {
                             // Failed to read value
+
                             Log.w(TAG, "Failed to read value.", error.toException());
                             Integer error_code = error.getCode();
 
@@ -450,6 +451,17 @@ public class GroupManagementActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
+        mUserDatabase.child(mUser.getUid()).removeEventListener(mEventListener);
+        if(mGroupEventListener != null && user_obj.getGroup() != null){
+            mGroupDatabase.child(user_obj.getGroup()).removeEventListener(mGroupEventListener);
+        }
+
+    }
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        mUserDatabase.child(mUser.getUid()).addValueEventListener(mEventListener);
     }
 
     @Override
