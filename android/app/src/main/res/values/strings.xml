@@ -50,6 +50,7 @@
     <string name="ng_groupName_missing">Please enter name for the event</string>
     <string name="ng_expireDate_missing">Please enter expiration date for the event</string>
     <string name="ng_expireTime_missing">Please enter expiration time for the event</string>
+    <string name="ng_creation_success">Event created successfully!</string>
 
     <string name="welcome_title">Welcome to use Event Horizon!</string>
     <string name="welcome_text1">You seem to be new here</string>

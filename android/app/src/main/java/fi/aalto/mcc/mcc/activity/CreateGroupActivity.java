@@ -293,6 +293,10 @@ public class CreateGroupActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     mSpinner.setVisibility(View.GONE);
+                                    Toast.makeText(CreateGroupActivity.this, R.string.ng_creation_success,
+                                            Toast.LENGTH_SHORT).show();
+                                    Intent i = new Intent(CreateGroupActivity.this, MainActivity.class);
+                                    startActivity(i);
                                     CreateGroupActivity.this.finish();
                                 }
                             });
