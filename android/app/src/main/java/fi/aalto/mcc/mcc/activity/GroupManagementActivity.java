@@ -147,6 +147,7 @@ public class GroupManagementActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     Log.d(TAG, "getIDTOKEN: " + task.getResult().getToken());
                     idToken = task.getResult().getToken();
+                    mUserDatabase.child(mUser.getUid()).addValueEventListener(mEventListener);
                 }
             }
         });
@@ -455,7 +456,6 @@ public class GroupManagementActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        mUserDatabase.child(mUser.getUid()).addValueEventListener(mEventListener);
     }
 
 
