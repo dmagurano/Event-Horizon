@@ -222,6 +222,11 @@ public class GroupManagementActivity extends AppCompatActivity {
                         public void onCancelled(DatabaseError error) {
                             // Failed to read value
                             Log.w(TAG, "Failed to read value.", error.toException());
+                            Integer error_code = error.getCode();
+
+                            if(error_code.equals(DatabaseError.PERMISSION_DENIED)){
+                                leaveGroup();
+                            }
                         }
                     };
 
@@ -336,6 +341,7 @@ public class GroupManagementActivity extends AppCompatActivity {
                     public void onCancelled(DatabaseError error) {
                         // Failed to read value
                         Log.w(TAG, "Failed to read value.", error.toException());
+
                     }
                 });
             }
