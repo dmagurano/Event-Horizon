@@ -163,6 +163,9 @@ public class GroupManagementActivity extends AppCompatActivity {
 
                 String group = user_obj.getGroup();
 
+                no_group.setVisibility(View.GONE);
+                yes_group.setVisibility(View.GONE);
+
                 USER_IN_GROUP = group != null;
 
                 final List<String> group_members_list = new ArrayList<String>();
