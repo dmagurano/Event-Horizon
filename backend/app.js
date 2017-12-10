@@ -230,7 +230,10 @@ app.post('/leave', (req, res) => {
           }
         }).catch(function (errorObject) {
             console.log("The read failed: " + errorObject.code);
-            res.status(500).send("Error")
+            userRef.update({
+              group: null
+            })
+            res.status(500).send("User removed from the expired group")
         })
     }).catch(function(error) {
         res.status(500).send(error.message)
