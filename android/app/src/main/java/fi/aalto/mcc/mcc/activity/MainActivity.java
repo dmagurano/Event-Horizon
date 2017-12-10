@@ -418,7 +418,7 @@ public class MainActivity extends AppCompatActivity
         protected void onPreExecute() {
             super.onPreExecute();
             busy.setMessage("Uploading to Server...");
-            busy.show();
+            //busy.show();
         }
 
         @Override
@@ -463,13 +463,11 @@ public class MainActivity extends AppCompatActivity
 
 
 
-
-
-    // Converting dp to pixel
     private int dpToPx(int dp) {
         Resources r = getResources();
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
     }
+
 
     private void initCollapsingToolbar() {
         final CollapsingToolbarLayout collapsingToolbar =

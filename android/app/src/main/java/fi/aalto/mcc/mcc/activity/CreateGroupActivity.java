@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
@@ -84,6 +85,8 @@ public class CreateGroupActivity extends AppCompatActivity {
 
         setupUI(findViewById(R.id.createGroupPage));
 
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         mDisplayDate = (EditText) findViewById(R.id.expireDate);
         mGroupName = (EditText) findViewById(R.id.CreateGroupName);
         mDisplayDate.setInputType(InputType.TYPE_NULL);
@@ -108,7 +111,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                 OnEventName(view);
             }
         });
-        
+
         mGroupName.setSelectAllOnFocus(true);
         mGroupName.setOnFocusChangeListener(new View.OnFocusChangeListener(){
             public void onFocusChange(View v, boolean hasFocus){
