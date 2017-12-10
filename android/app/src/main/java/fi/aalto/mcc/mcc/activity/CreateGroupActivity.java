@@ -100,11 +100,28 @@ public class CreateGroupActivity extends AppCompatActivity {
         Calendar sCalendar = Calendar.getInstance();
         String dayLongName = sCalendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.US);
         mGroupName.setText("My " + dayLongName + " Event");
+
+
+        mGroupName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OnEventName(view);
+            }
+        });
+        
         mGroupName.setSelectAllOnFocus(true);
+        mGroupName.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+            public void onFocusChange(View v, boolean hasFocus){
+                if ((hasFocus) && (mGroupName.getText().length() >0) )
+                     ((EditText)v).selectAll();
+            }
+        });
 
         mDisplayDate.setText("24/12/2017");
 
         mDisplayTime.setText("00:00");
+
+
 
 
 
@@ -293,6 +310,13 @@ public class CreateGroupActivity extends AppCompatActivity {
         });
 
     }
+
+    public void OnEventName(View v)
+    {
+        ((EditText)v).selectAll();
+    }
+
+
 
     public void setupUI(View view) {
 
