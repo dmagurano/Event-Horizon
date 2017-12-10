@@ -38,6 +38,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.BufferedOutputStream;
@@ -205,7 +206,16 @@ public class GalleryObjectDetails extends DialogFragment {
                     public void onFailure(@NonNull Exception exception) {
                         Log.e("Share Image","local temp file not created " +exception.toString());
                     }
-                });
+                }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        // progress percentage
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+
+                        // percentage in progress dialog
+                        busy.setMessage("Downloaded " + ((int) progress) + "%...");
+                    }
+                });;
 
             }
             else {
